@@ -3,12 +3,10 @@ param keyVaultSecretUri string
 @description('Names of the environment variables to retrieve from Key Vault Secrets.')
 param variableNames array
 
-type environmentVariablesInfo = [
-    {
-        name: string
-        value: string
-    }
-]
+type environmentVariableInfo = {
+    name: string
+    value: string
+}
 
 var keyVaultSettings = [for setting in variableNames: {
     name: setting
@@ -16,4 +14,4 @@ var keyVaultSettings = [for setting in variableNames: {
 }]
 
 @description('Environment variables containing the name and a value represented as a Key Vault Secret URI.')
-output environmentVariables environmentVariablesInfo = keyVaultSettings
+output environmentVariables environmentVariableInfo[] = keyVaultSettings
