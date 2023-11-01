@@ -11,12 +11,12 @@ type skuInfo = {
 
 @description('Whether to enable an admin user that has push and pull access. Defaults to false.')
 param adminUserEnabled bool = false
-@description('Whether to allow public network access. Defaults to Disabled.')
+@description('Whether to allow public network access. Defaults to Enabled.')
 @allowed([
     'Disabled'
     'Enabled'
 ])
-param publicNetworkAccess string = 'Disabled'
+param publicNetworkAccess string = 'Enabled'
 @description('Container Registry SKU. Defaults to Basic.')
 param sku skuInfo = {
     name: 'Basic'
