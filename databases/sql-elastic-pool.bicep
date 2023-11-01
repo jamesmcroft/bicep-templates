@@ -7,7 +7,7 @@ param tags object = {}
 
 type skuInfo = {
   name: 'BasicPool' | 'Standard' | 'Premium' | 'GP_Gen5' | 'BC_Gen5'
-  capacity: int
+  capacity: int?
 }
 
 type perDatabaseConfigInfo = {
