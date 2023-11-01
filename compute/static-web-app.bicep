@@ -25,6 +25,8 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' = {
     }
 }
 
+@description('The deployed Static Web App resource.')
+output resource resource = staticWebApp
 @description('ID for the deployed Static Web App resource.')
 output id string = staticWebApp.id
 @description('Name for the deployed Static Web App resource.')

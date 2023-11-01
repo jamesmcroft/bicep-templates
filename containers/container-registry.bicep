@@ -36,6 +36,8 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' =
     }
 }
 
+@description('The deployed Container Registry resource.')
+output resource resource = containerRegistry
 @description('ID for the deployed Container Registry resource.')
 output id string = containerRegistry.id
 @description('Name for the deployed Container Registry resource.')

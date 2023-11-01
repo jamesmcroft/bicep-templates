@@ -36,6 +36,8 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
     }
 }
 
+@description('The deployed Function App resource.')
+output resource resource = functionApp
 @description('ID for the deployed Function App resource.')
 output id string = functionApp.id
 @description('Name for the deployed Function App resource.')

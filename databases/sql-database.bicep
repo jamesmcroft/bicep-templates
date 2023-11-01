@@ -28,6 +28,8 @@ resource sqlDatabase 'Microsoft.Sql/servers/databases@2022-05-01-preview' = {
     sku: sku
 }
 
+@description('The deployed SQL Database resource.')
+output resource resource = sqlDatabase
 @description('ID for the deployed SQL Database resource.')
 output id string = sqlDatabase.id
 @description('Name for the deployed SQL Database resource.')

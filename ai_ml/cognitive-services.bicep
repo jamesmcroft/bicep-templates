@@ -66,6 +66,8 @@ resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01
   }
 }]
 
+@description('The deployed Cognitive Services resource.')
+output resource resource = cognitiveServices
 @description('ID for the deployed Cognitive Services resource.')
 output id string = cognitiveServices.id
 @description('Name for the deployed Cognitive Services resource.')

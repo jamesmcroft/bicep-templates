@@ -34,6 +34,8 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
     }
 }
 
+@description('The deployed App Service Plan resource.')
+output resource resource = appServicePlan
 @description('ID for the deployed App Service Plan resource.')
 output id string = appServicePlan.id
 @description('Name for the deployed App Service Plan resource.')

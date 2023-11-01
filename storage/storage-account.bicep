@@ -56,6 +56,8 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
 
 var primaryKey = listKeys(storageAccount.id, '2022-09-01').keys[0].value
 
+@description('The deployed Storage Account resource.')
+output resource resource = storageAccount
 @description('ID for the deployed Storage Account resource.')
 output id string = storageAccount.id
 @description('Name for the deployed Storage Account resource.')

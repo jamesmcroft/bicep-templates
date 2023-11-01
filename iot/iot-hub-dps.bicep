@@ -37,6 +37,8 @@ resource iotHubDps 'Microsoft.Devices/provisioningServices@2022-02-05' = {
     }
 }
 
+@description('The deployed IoT Hub DPS resource.')
+output resource resource = iotHubDps
 @description('ID for the deployed IoT Hub DPS resource.')
 output id string = iotHubDps.id
 @description('Name for the deployed IoT Hub DPS resource.')

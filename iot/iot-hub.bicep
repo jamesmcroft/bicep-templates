@@ -61,6 +61,8 @@ resource iotHub 'Microsoft.Devices/IotHubs@2022-04-30-preview' = {
   }
 }
 
+@description('The deployed IoT Hub resource.')
+output resource resource = iotHub
 @description('ID for the deployed IoT Hub resource.')
 output id string = iotHub.id
 @description('Name for the deployed IoT Hub resource.')

@@ -32,6 +32,8 @@ resource sqlServerAzureFirewallRules 'Microsoft.Sql/servers/firewallRules@2022-0
     }
 }
 
+@description('The deployed SQL Server resource.')
+output resource resource = sqlServer
 @description('ID for the deployed SQL Server resource.')
 output id string = sqlServer.id
 @description('Name for the deployed SQL Server resource.')

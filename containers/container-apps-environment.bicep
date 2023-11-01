@@ -31,6 +31,8 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01'
     }
 }
 
+@description('The deployed Container Apps Environment resource.')
+output resource resource = containerAppsEnvironment
 @description('ID for the deployed Container Apps Environment resource.')
 output id string = containerAppsEnvironment.id
 @description('Name for the deployed Container Apps Environment resource.')

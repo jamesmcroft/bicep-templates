@@ -18,7 +18,7 @@ param enableHealthBehaviorInsight bool = false
 @description('ID for the Managed Identity associated with the ML workspace.')
 param identityId string
 
-resource workspace 'Microsoft.MachineLearningServices/workspaces@2022-10-01' = {
+resource mlWorkspace 'Microsoft.MachineLearningServices/workspaces@2022-10-01' = {
     name: name
     location: location
     tags: tags
@@ -39,7 +39,9 @@ resource workspace 'Microsoft.MachineLearningServices/workspaces@2022-10-01' = {
     }
 }
 
+@description('The deployed ML workspace resource.')
+output resource resource = mlWorkspace
 @description('ID for the deployed ML workspace resource.')
-output id string = workspace.id
+output id string = mlWorkspace.id
 @description('Name for the deployed ML workspace resource.')
-output name string = workspace.name
+output name string = mlWorkspace.name

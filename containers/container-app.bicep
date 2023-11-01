@@ -109,6 +109,8 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
     }
 }
 
+@description('The deployed Container App resource.')
+output resource resource = containerApp
 @description('ID for the deployed Container App resource.')
 output id string = containerApp.id
 @description('Name for the deployed Container App resource.')

@@ -24,3 +24,10 @@ resource storage 'Microsoft.App/managedEnvironments/storages@2023-05-01' = {
         azureFile: storageConfig
     }
 }
+
+@description('The deployed Container Apps Storage resource.')
+output resource resource = storage
+@description('ID for the deployed Container Apps Storage resource.')
+output id string = storage.id
+@description('Name for the deployed Container Apps Storage resource.')
+output name string = storage.name

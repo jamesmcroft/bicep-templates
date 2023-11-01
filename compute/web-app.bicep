@@ -34,6 +34,8 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
     }
 }
 
+@description('The deployed Web App resource.')
+output resource resource = webApp
 @description('ID for the deployed Web App resource.')
 output id string = webApp.id
 @description('Name for the deployed Web App resource.')

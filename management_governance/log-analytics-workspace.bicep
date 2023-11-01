@@ -42,10 +42,14 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
     }
 }
 
+@description('The deployed Log Analytics Workspace resource.')
+output resource resource = logAnalyticsWorkspace
 @description('ID for the deployed Log Analytics Workspace resource.')
 output id string = logAnalyticsWorkspace.id
 @description('Name for the deployed Log Analytics Workspace resource.')
 output name string = logAnalyticsWorkspace.name
+@description('The deployed Application Insights resource.')
+output applicationInsightsResource resource = applicationInsights
 @description('ID for the deployed Application Insights resource.')
 output applicationInsightsId string = applicationInsights.id
 @description('Name for the deployed Application Insights resource.')

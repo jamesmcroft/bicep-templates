@@ -59,3 +59,10 @@ resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2023-05
         scopes: scopes
     }
 }
+
+@description('The deployed Dapr component resource.')
+output resource resource = daprComponent
+@description('ID for the deployed Dapr component resource.')
+output id string = daprComponent.id
+@description('Name for the deployed Dapr component resource.')
+output name string = daprComponent.name

@@ -123,6 +123,8 @@ resource frontDoor 'Microsoft.Network/frontDoors@2021-06-01' = {
   }
 }
 
+@description('The deployed Front Door resource.')
+output resource resource = frontDoor
 @description('ID for the deployed Front Door resource.')
 output id string = frontDoor.id
 @description('Name for the deployed Front Door resource.')

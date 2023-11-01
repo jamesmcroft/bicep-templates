@@ -29,6 +29,8 @@ resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2022-0
     }
 }
 
+@description('The deployed Storage file share resource.')
+output resource resource = fileShare
 @description('ID for the deployed Storage file share resource.')
 output id string = fileShare.id
 @description('Name for the deployed Storage file share resource.')

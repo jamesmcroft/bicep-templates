@@ -13,6 +13,8 @@ resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2022-09-01'
     parent: storageAccount
 }
 
+@description('The deployed Storage file service resource.')
+output resource resource = fileService
 @description('ID for the deployed Storage file service resource.')
 output id string = fileService.id
 @description('Name for the deployed Storage file service resource.')

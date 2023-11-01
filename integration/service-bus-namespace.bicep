@@ -35,6 +35,8 @@ resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2021-11-01' = {
     }
 }
 
+@description('The deployed Service Bus Namespace resource.')
+output resource resource = serviceBusNamespace
 @description('ID for the deployed Service Bus Namespace resource.')
 output id string = serviceBusNamespace.id
 @description('Name for the deployed Service Bus Namespace resource.')
