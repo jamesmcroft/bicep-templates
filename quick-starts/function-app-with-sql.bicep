@@ -75,6 +75,11 @@ module managedIdentity '../security/managed-identity.bicep' = {
   }
 }
 
+resource keyVaultSecretsOfficer 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  scope: resourceGroup
+  name: roles.keyVaultSecretsOfficer
+}
+
 module keyVault '../security/key-vault.bicep' = {
   name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVault}${resourceToken}'
   scope: resourceGroup
@@ -82,6 +87,12 @@ module keyVault '../security/key-vault.bicep' = {
     name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVault}${resourceToken}'
     location: location
     tags: union(tags, {})
+    roleAssignments: [
+      {
+        principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: keyVaultSecretsOfficer.id
+      }
+    ]
   }
 }
 
@@ -97,20 +108,6 @@ module appSettingSecret '../security/key-vault-secret.bicep' = [for setting in a
     keyVault
   ]
 }]
-
-module keyVaultSecretAuth '../security/managed-identity-role.bicep' = {
-  name: '${managedIdentity.name}-${keyVault.name}'
-  scope: resourceGroup
-  params: {
-    resourceId: keyVault.outputs.id
-    identityPrincipalId: managedIdentity.outputs.principalId
-    roleDefinitionId: roles.keyVaultSecretsOfficer
-  }
-  dependsOn: [
-    keyVault
-    managedIdentity
-  ]
-}
 
 module logAnalyticsWorkspace '../management_governance/log-analytics-workspace.bicep' = {
   name: !empty(logAnalyticsWorkspaceName) ? logAnalyticsWorkspaceName : '${abbrs.logAnalyticsWorkspace}${resourceToken}'
