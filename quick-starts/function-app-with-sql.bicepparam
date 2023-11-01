@@ -1,5 +1,5 @@
 using './function-app-with-sql.bicep'
 
-param workloadName = 'myfunctionapp'
+param workloadName = 'jc-functionsql'
 param location = 'uksouth'
 param sqlServerAdminPassword = 'Sw4DOwx5Vgkrr5as'
