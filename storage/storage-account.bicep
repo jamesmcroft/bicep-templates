@@ -54,9 +54,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
     }
 }
 
+var primaryKey = listKeys(storageAccount.id, '2022-09-01').keys[0].value
+
 @description('ID for the deployed Storage Account resource.')
 output id string = storageAccount.id
 @description('Name for the deployed Storage Account resource.')
 output name string = storageAccount.name
-@description('Connection string (without account key) for the deployed Storage Account resource.')
-output connectionString string = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};'
+@description('Connection string for the deployed Storage Account resource.')
+output connectionString string = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${primaryKey}'
