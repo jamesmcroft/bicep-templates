@@ -50,6 +50,11 @@ module managedIdentity '../security/managed-identity.bicep' = {
     }
 }
 
+resource storageBlobDataContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+    scope: resourceGroup
+    name: roles.storageBlobDataContributor
+}
+
 module storageAccount '../storage/storage-account.bicep' = {
     name: !empty(storageAccountName) ? storageAccountName : '${abbrs.storageAccount}${resourceToken}'
     scope: resourceGroup
@@ -60,21 +65,23 @@ module storageAccount '../storage/storage-account.bicep' = {
         sku: {
             name: 'Standard_LRS'
         }
+        roleAssignments: [
+            {
+                principalId: managedIdentity.outputs.principalId
+                roleDefinitionId: storageBlobDataContributor.id
+            }
+        ]
     }
 }
 
-module storageBlobContributorAuth '../security/managed-identity-role.bicep' = {
-    name: '${managedIdentity.name}-${storageAccount.name}-blobcontributor'
+resource keyVaultContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
     scope: resourceGroup
-    params: {
-        resourceId: storageAccount.outputs.id
-        identityPrincipalId: managedIdentity.outputs.principalId
-        roleDefinitionId: roles.storageBlobDataContributor
-    }
-    dependsOn: [
-        storageAccount
-        managedIdentity
-    ]
+    name: roles.contributor
+}
+
+resource keyVaultAdministrator 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+    scope: resourceGroup
+    name: roles.keyVaultAdministrator
 }
 
 module keyVault '../security/key-vault.bicep' = {
@@ -84,35 +91,17 @@ module keyVault '../security/key-vault.bicep' = {
         name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVault}${resourceToken}'
         location: location
         tags: union(tags, {})
+        roleAssignments: [
+            {
+                principalId: managedIdentity.outputs.principalId
+                roleDefinitionId: keyVaultContributor.id
+            }
+            {
+                principalId: managedIdentity.outputs.principalId
+                roleDefinitionId: keyVaultAdministrator.id
+            }
+        ]
     }
-}
-
-module keyVaultContributorAuth '../security/managed-identity-role.bicep' = {
-    name: '${managedIdentity.name}-${keyVault.name}-contributor'
-    scope: resourceGroup
-    params: {
-        resourceId: keyVault.outputs.id
-        identityPrincipalId: managedIdentity.outputs.principalId
-        roleDefinitionId: roles.contributor
-    }
-    dependsOn: [
-        keyVault
-        managedIdentity
-    ]
-}
-
-module keyVaultAdministratorAuth '../security/managed-identity-role.bicep' = {
-    name: '${managedIdentity.name}-${keyVault.name}-administrator'
-    scope: resourceGroup
-    params: {
-        resourceId: keyVault.outputs.id
-        identityPrincipalId: managedIdentity.outputs.principalId
-        roleDefinitionId: roles.keyVaultAdministrator
-    }
-    dependsOn: [
-        keyVault
-        managedIdentity
-    ]
 }
 
 module logAnalyticsWorkspace '../management_governance/log-analytics-workspace.bicep' = {
@@ -126,6 +115,16 @@ module logAnalyticsWorkspace '../management_governance/log-analytics-workspace.b
     }
 }
 
+resource containerRegistryPush 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+    scope: resourceGroup
+    name: roles.acrPush
+}
+
+resource containerRegistryPull 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+    scope: resourceGroup
+    name: roles.acrPull
+}
+
 module containerRegistry '../containers/container-registry.bicep' = {
     name: !empty(containerRegistryName) ? containerRegistryName : '${abbrs.containerRegistry}${resourceToken}'
     scope: resourceGroup
@@ -137,35 +136,17 @@ module containerRegistry '../containers/container-registry.bicep' = {
             name: 'Basic'
         }
         adminUserEnabled: true
+        roleAssignments: [
+            {
+                principalId: managedIdentity.outputs.principalId
+                roleDefinitionId: containerRegistryPush.id
+            }
+            {
+                principalId: managedIdentity.outputs.principalId
+                roleDefinitionId: containerRegistryPull.id
+            }
+        ]
     }
-}
-
-module containerRegistryPushAuth '../security/managed-identity-role.bicep' = {
-    name: '${managedIdentity.name}-${containerRegistry.name}-push'
-    scope: resourceGroup
-    params: {
-        resourceId: containerRegistry.outputs.id
-        identityPrincipalId: managedIdentity.outputs.principalId
-        roleDefinitionId: roles.acrPush
-    }
-    dependsOn: [
-        containerRegistry
-        managedIdentity
-    ]
-}
-
-module containerRegistryPullAuth '../security/managed-identity-role.bicep' = {
-    name: '${managedIdentity.name}-${containerRegistry.name}-pull'
-    scope: resourceGroup
-    params: {
-        resourceId: containerRegistry.outputs.id
-        identityPrincipalId: managedIdentity.outputs.principalId
-        roleDefinitionId: roles.acrPull
-    }
-    dependsOn: [
-        containerRegistry
-        managedIdentity
-    ]
 }
 
 module machineLearningWorkspace '../ai_ml/machine-learning-workspace.bicep' = {
