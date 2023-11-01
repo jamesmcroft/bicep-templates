@@ -12,7 +12,7 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01'
     name: containerAppsEnvironmentName
 }
 
-resource daprServiceBusComponent 'Microsoft.App/managedEnvironments/daprComponents@2023-05-01' = {
+resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2023-05-01' = {
     name: name
     parent: containerAppsEnvironment
     properties: {
