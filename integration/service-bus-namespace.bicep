@@ -5,6 +5,11 @@ param location string = resourceGroup().location
 @description('Tags for the resource.')
 param tags object = {}
 
+type roleAssignmentInfo = {
+    roleDefinitionId: string
+    principalId: string
+}
+
 type skuInfo = {
     name: 'Basic' | 'Premium' | 'Standard'
 }
@@ -23,6 +28,8 @@ param serviceBusConfig serviceBusConfigInfo = {
     disableLocalAuth: false
     zoneRedundant: false
 }
+@description('Role assignments to create for the Service Bus Namespace.')
+param roleAssignments roleAssignmentInfo[] = []
 
 resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2021-11-01' = {
     name: name
@@ -34,6 +41,16 @@ resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2021-11-01' = {
         zoneRedundant: serviceBusConfig.zoneRedundant
     }
 }
+
+resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for roleAssignment in roleAssignments: {
+    name: guid(serviceBusNamespace.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
+    scope: serviceBusNamespace
+    properties: {
+        principalId: roleAssignment.principalId
+        roleDefinitionId: roleAssignment.roleDefinitionId
+        principalType: 'ServicePrincipal'
+    }
+}]
 
 @description('The deployed Service Bus Namespace resource.')
 output resource resource = serviceBusNamespace
