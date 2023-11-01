@@ -9,22 +9,21 @@ param value string
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
     name: keyVaultName
-}
 
-resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
-    name: name
-    parent: keyVault
-    properties: {
-        value: value
-        attributes: {
-            enabled: true
+    resource keyVaultSecret 'secrets' = {
+        name: name
+        properties: {
+            value: value
+            attributes: {
+                enabled: true
+            }
         }
     }
 }
 
 @description('ID for the deployed Key Vault Secret resource.')
-output id string = keyVaultSecret.id
+output id string = keyVault::keyVaultSecret.id
 @description('Name for the deployed Key Vault Secret resource.')
-output name string = keyVaultSecret.name
+output name string = keyVault::keyVaultSecret.name
 @description('URI for the deployed Key Vault Secret resource.')
-output uri string = keyVaultSecret.properties.secretUri
+output uri string = keyVault::keyVaultSecret.properties.secretUri
