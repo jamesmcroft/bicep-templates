@@ -17,6 +17,7 @@ param sku skuInfo = {
 resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' = {
     name: name
     location: location
+    tags: tags
     sku: sku
     properties: {
         allowConfigFileUpdates: true
