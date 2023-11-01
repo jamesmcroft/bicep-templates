@@ -5,6 +5,11 @@ param location string = resourceGroup().location
 @description('Tags for the resource.')
 param tags object = {}
 
+type roleAssignmentInfo = {
+    roleDefinitionId: string
+    principalId: string
+}
+
 type skuInfo = {
     name: 'Premium_LRS' | 'Premium_ZRS' | 'Standard_GRS' | 'Standard_GZRS' | 'Standard_LRS' | 'Standard_RAGRS' | 'Standard_RAGZRS' | 'Standard_ZRS'
 }
@@ -13,13 +18,14 @@ type skuInfo = {
 param sku skuInfo = {
     name: 'Standard_LRS'
 }
-
 @description('Access tier for the Storage Account. If the sku is a premium SKU, this will be ignored. Defaults to Hot.')
 @allowed([
     'Hot'
     'Cool'
 ])
 param accessTier string = 'Hot'
+@description('Role assignments to create for the Storage Account.')
+param roleAssignments roleAssignmentInfo[] = []
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
     name: name
@@ -53,6 +59,17 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
         }
     }
 }
+
+resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for roleAssignment in roleAssignments: {
+    name: guid(storageAccount.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
+    scope: storageAccount
+    properties: {
+        principalId: roleAssignment.principalId
+        roleDefinitionId: roleAssignment.roleDefinitionId
+        principalType: 'ServicePrincipal'
+    }
+}]
+
 
 var primaryKey = listKeys(storageAccount.id, '2022-09-01').keys[0].value
 

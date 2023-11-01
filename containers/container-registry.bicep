@@ -5,6 +5,11 @@ param location string = resourceGroup().location
 @description('Tags for the resource.')
 param tags object = {}
 
+type roleAssignmentInfo = {
+    roleDefinitionId: string
+    principalId: string
+}
+
 type skuInfo = {
     name: 'Basic' | 'Premium' | 'Standard'
 }
@@ -21,6 +26,8 @@ param publicNetworkAccess string = 'Enabled'
 param sku skuInfo = {
     name: 'Basic'
 }
+@description('Role assignments to create for the Container Registry.')
+param roleAssignments roleAssignmentInfo[] = []
 
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' = {
     name: name
@@ -35,6 +42,16 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' =
         publicNetworkAccess: publicNetworkAccess
     }
 }
+
+resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for roleAssignment in roleAssignments: {
+    name: guid(containerRegistry.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
+    scope: containerRegistry
+    properties: {
+        principalId: roleAssignment.principalId
+        roleDefinitionId: roleAssignment.roleDefinitionId
+        principalType: 'ServicePrincipal'
+    }
+}]
 
 @description('The deployed Container Registry resource.')
 output resource resource = containerRegistry
