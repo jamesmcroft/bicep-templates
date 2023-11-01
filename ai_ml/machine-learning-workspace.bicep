@@ -10,26 +10,32 @@ param storageAccountId string
 @description('ID for the Key Vault associated with the ML workspace.')
 param keyVaultId string
 @description('ID for the Application Insights associated with the ML workspace.')
-param appInsightsId string
+param applicationInsightsId string
 @description('ID for the Container Registry associated with the ML workspace.')
 param containerRegistryId string
 @description('Whether to reduce telemetry collection and enable additional encryption. Defaults to false.')
 param enableHealthBehaviorInsight bool = false
+@description('ID for the Managed Identity associated with the ML workspace.')
+param identityId string
 
 resource workspace 'Microsoft.MachineLearningServices/workspaces@2022-10-01' = {
     name: name
     location: location
     tags: tags
     identity: {
-        type: 'SystemAssigned'
+        type: 'UserAssigned'
+        userAssignedIdentities: {
+            '${identityId}': {}
+        }
     }
     properties: {
         friendlyName: name
         storageAccount: storageAccountId
         keyVault: keyVaultId
-        applicationInsights: appInsightsId
+        applicationInsights: applicationInsightsId
         containerRegistry: containerRegistryId
         hbiWorkspace: enableHealthBehaviorInsight
+        primaryUserAssignedIdentity: identityId
     }
 }
 
