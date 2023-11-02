@@ -52,9 +52,13 @@ resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for 
     }
 }]
 
+var primaryConnectionString = listKeys('${serviceBusNamespace.id}/AuthorizationRules/RootManageSharedAccessKey', '2021-11-01').primaryConnectionString
+
 @description('The deployed Service Bus Namespace resource.')
 output resource resource = serviceBusNamespace
 @description('ID for the deployed Service Bus Namespace resource.')
 output id string = serviceBusNamespace.id
 @description('Name for the deployed Service Bus Namespace resource.')
 output name string = serviceBusNamespace.name
+@description('Connection string of the Service Bus namespace resource.')
+output connectionString string = primaryConnectionString
