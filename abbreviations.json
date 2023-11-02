@@ -175,6 +175,7 @@
   "fileShare": "share-",
   "storageAccount": "st",
   "storageSyncService": "sss-",
+  "fileService": "fs-",
 
   "virtualDesktopHostPool": "vdpool-",
   "virtualDesktopApplicationGroup": "vdag-",
