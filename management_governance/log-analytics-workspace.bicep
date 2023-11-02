@@ -42,6 +42,8 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
     }
 }
 
+var primarySharedKey = listKeys(logAnalyticsWorkspace.id, '2022-10-01').primarySharedKey
+
 @description('The deployed Log Analytics Workspace resource.')
 output resource resource = logAnalyticsWorkspace
 @description('ID for the deployed Log Analytics Workspace resource.')
@@ -56,6 +58,8 @@ output applicationInsightsId string = applicationInsights.id
 output applicationInsightsName string = applicationInsights.name
 @description('Customer ID for the deployed Log Analytics Workspace resource.')
 output customerId string = logAnalyticsWorkspace.properties.customerId
+@description('Shared key for the deployed Log Analytics Workspace resource.')
+output sharedKey string = primarySharedKey
 @description('Instrumentation Key for the deployed Application Insights resource.')
 output instrumentationKey string = applicationInsights.properties.InstrumentationKey
 @description('Connection string for the deployed Application Insights resource.')
