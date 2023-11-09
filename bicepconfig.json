@@ -10,6 +10,7 @@
     }
   },
   "experimentalFeaturesEnabled": {
-    "resourceTypedParamsAndOutputs": true
+    "resourceTypedParamsAndOutputs": true,
+    "compileTimeImports": true
   }
 }
