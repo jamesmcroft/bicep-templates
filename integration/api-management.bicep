@@ -4,6 +4,8 @@ param name string
 param location string = resourceGroup().location
 @description('Tags for the resource.')
 param tags object = {}
+@description('ID for the Managed Identity associated with the API Management resource.')
+param apiManagementIdentityId string
 
 type skuInfo = {
   name: 'Developer' | 'Standard' | 'Premium'
@@ -27,7 +29,13 @@ resource apiManagement 'Microsoft.ApiManagement/service@2021-08-01' = {
   location: location
   tags: tags
   sku: sku
-  properties: {
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+        '${apiManagementIdentityId}': {}
+    }
+}
+properties: {
     publisherEmail: publisherEmail
     publisherName: publisherName
   }
@@ -39,3 +47,5 @@ output resource resource = apiManagement
 output id string = apiManagement.id
 @description('Name for the deployed API Management resource.')
 output name string = apiManagement.name
+@description('Gateway URL for the deployed API Management resource.')
+output gatewayUrl string = apiManagement.properties.gatewayUrl
