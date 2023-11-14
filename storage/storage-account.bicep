@@ -14,6 +14,12 @@ type skuInfo = {
     name: 'Premium_LRS' | 'Premium_ZRS' | 'Standard_GRS' | 'Standard_GZRS' | 'Standard_LRS' | 'Standard_RAGRS' | 'Standard_RAGZRS' | 'Standard_ZRS'
 }
 
+type blobContainerRetentionInfo = {
+    allowPermanentDelete: bool
+    days: int
+    enabled: bool
+}
+
 @description('Storage Account SKU. Defaults to Standard_LRS.')
 param sku skuInfo = {
     name: 'Standard_LRS'
@@ -24,6 +30,12 @@ param sku skuInfo = {
     'Cool'
 ])
 param accessTier string = 'Hot'
+@description('Blob container retention policy for the Storage Account. Defaults to disabled.')
+param blobContainerRetention blobContainerRetentionInfo = {
+    allowPermanentDelete: false
+    days: 7
+    enabled: false
+}
 @description('Role assignments to create for the Storage Account.')
 param roleAssignments roleAssignmentInfo[] = []
 
@@ -56,6 +68,13 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
                 }
             }
             keySource: 'Microsoft.Storage'
+        }
+    }
+
+    resource blobServices 'blobServices@2022-09-01' = {
+        name: 'default'
+        properties: {
+            containerDeleteRetentionPolicy: blobContainerRetention
         }
     }
 }
