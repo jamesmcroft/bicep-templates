@@ -1,6 +1,7 @@
 {
   "cognitiveSearch": "srch-",
   "cognitiveServices": "cog-",
+  "openAI": "oai-",
   "machineLearningWorkspace": "mlw-",
 
   "analysisServicesServer": "as",
@@ -175,7 +176,6 @@
   "fileShare": "share-",
   "storageAccount": "st",
   "storageSyncService": "sss-",
-  "fileService": "fs-",
 
   "virtualDesktopHostPool": "vdpool-",
   "virtualDesktopApplicationGroup": "vdag-",
