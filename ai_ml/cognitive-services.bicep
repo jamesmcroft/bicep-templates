@@ -5,6 +5,16 @@ param location string = resourceGroup().location
 @description('Tags for the resource.')
 param tags object = {}
 
+type keyVaultSecretInfo = {
+  name: string
+  property: 'PrimaryKey'
+}
+
+type keyVaultSecretsInfo = {
+  name: string
+  secrets: keyVaultSecretInfo[]
+}
+
 @description('Cognitive Services SKU. Defaults to S0.')
 param sku object = {
   name: 'S0'
@@ -39,6 +49,8 @@ param deployments array = []
   'Disabled'
 ])
 param publicNetworkAccess string = 'Enabled'
+@description('Properties to store in a Key Vault.')
+param keyVaultSecrets keyVaultSecretsInfo?
 
 resource cognitiveServices 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: name
@@ -66,11 +78,20 @@ resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01
   }
 }]
 
-@description('The deployed Cognitive Services resource.')
-output resource resource = cognitiveServices
+module keyVaultSecret '../security/key-vault-secret.bicep' = [for secret in keyVaultSecrets.?secrets!: {
+  name: '${secret.name}-secret'
+  params: {
+    keyVaultName: keyVaultSecrets.?name!
+    name: secret.name
+    value: secret.property == 'PrimaryKey' ? cognitiveServices.listKeys().key1 : ''
+  }
+}]
+
 @description('ID for the deployed Cognitive Services resource.')
 output id string = cognitiveServices.id
 @description('Name for the deployed Cognitive Services resource.')
 output name string = cognitiveServices.name
 @description('Endpoint for the deployed Cognitive Services resource.')
 output endpoint string = cognitiveServices.properties.endpoint
+@description('Host for the deployed Cognitive Services resource.')
+output host string = split(cognitiveServices.properties.endpoint, '/')[2]
