@@ -12,10 +12,10 @@ param workspaceName string
 @description('Connection information.')
 param connection connectionInfo
 
-resource mlWorkspace 'Microsoft.MachineLearningServices/workspaces@2023-06-01-preview' existing = {
+resource workspace 'Microsoft.MachineLearningServices/workspaces@2023-06-01-preview' existing = {
   name: workspaceName
 
-  resource mlWorkspaceConnection 'connections' = {
+  resource workspaceConnection 'connections' = {
     name: connection.name
     properties: {
       category: connection.category
@@ -27,8 +27,8 @@ resource mlWorkspace 'Microsoft.MachineLearningServices/workspaces@2023-06-01-pr
 }
 
 @description('The deployed ML workspace connection resource.')
-output resource resource = mlWorkspace::mlWorkspaceConnection
+output resource resource = workspace::workspaceConnection
 @description('ID for the deployed ML workspace connection resource.')
-output id string = mlWorkspace::mlWorkspaceConnection.id
+output id string = workspace::workspaceConnection.id
 @description('Name for the deployed ML workspace connection resource.')
-output name string = mlWorkspace::mlWorkspaceConnection.name
+output name string = workspace::workspaceConnection.name

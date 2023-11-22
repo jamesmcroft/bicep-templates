@@ -20,33 +20,7 @@ type keyVaultSecretsInfo = {
   secrets: keyVaultSecretInfo[]
 }
 
-@description('Cognitive Services SKU. Defaults to S0.')
-param sku object = {
-  name: 'S0'
-}
-@description('Cognitive Services Kind. Defaults to OpenAI.')
-@allowed([
-  'Bing.Speech'
-  'SpeechTranslation'
-  'TextTranslation'
-  'Bing.Search.v7'
-  'Bing.Autosuggest.v7'
-  'Bing.CustomSearch'
-  'Bing.SpellCheck.v7'
-  'Bing.EntitySearch'
-  'Face'
-  'ComputerVision'
-  'ContentModerator'
-  'TextAnalytics'
-  'LUIS'
-  'SpeakerRecognition'
-  'CustomSpeech'
-  'CustomVision.Training'
-  'CustomVision.Prediction'
-  'OpenAI'
-])
-param kind string = 'OpenAI'
-@description('List of deployments for Cognitive Services.')
+@description('List of deployments for the AI service.')
 param deployments array = []
 @description('Whether to enable public network access. Defaults to Enabled.')
 @allowed([
@@ -62,21 +36,23 @@ param keyVaultSecrets keyVaultSecretsInfo = {
 @description('Role assignments to create for the Cognitive Service instance.')
 param roleAssignments roleAssignmentInfo[] = []
 
-resource cognitiveServices 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = {
+resource aiServices 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = {
   name: name
   location: location
   tags: tags
-  kind: kind
+  kind: 'AIServices'
   properties: {
     customSubDomainName: toLower(name)
     publicNetworkAccess: publicNetworkAccess
   }
-  sku: sku
+  sku: {
+    name: 'S0'
+  }
 }
 
 @batchSize(1)
 resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2023-10-01-preview' = [for deployment in deployments: {
-  parent: cognitiveServices
+  parent: aiServices
   name: deployment.name
   properties: {
     model: contains(deployment, 'model') ? deployment.model : null
@@ -93,25 +69,25 @@ module keyVaultSecret '../security/key-vault-secret.bicep' = [for secret in keyV
   params: {
     keyVaultName: keyVaultSecrets.?name!
     name: secret.name
-    value: secret.property == 'PrimaryKey' ? cognitiveServices.listKeys().key1 : ''
+    value: secret.property == 'PrimaryKey' ? aiServices.listKeys().key1 : ''
   }
 }]
 
 resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for roleAssignment in roleAssignments: {
-  name: guid(cognitiveServices.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
-  scope: cognitiveServices
+  name: guid(aiServices.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
+  scope: aiServices
   properties: {
-      principalId: roleAssignment.principalId
-      roleDefinitionId: roleAssignment.roleDefinitionId
-      principalType: 'ServicePrincipal'
+    principalId: roleAssignment.principalId
+    roleDefinitionId: roleAssignment.roleDefinitionId
+    principalType: 'ServicePrincipal'
   }
 }]
 
-@description('ID for the deployed Cognitive Services resource.')
-output id string = cognitiveServices.id
-@description('Name for the deployed Cognitive Services resource.')
-output name string = cognitiveServices.name
-@description('Endpoint for the deployed Cognitive Services resource.')
-output endpoint string = cognitiveServices.properties.endpoint
-@description('Host for the deployed Cognitive Services resource.')
-output host string = split(cognitiveServices.properties.endpoint, '/')[2]
+@description('ID for the deployed AI Service resource.')
+output id string = aiServices.id
+@description('Name for the deployed AI Service resource.')
+output name string = aiServices.name
+@description('Endpoint for the deployed AI Service resource.')
+output endpoint string = aiServices.properties.endpoint
+@description('Host for the deployed AI Service resource.')
+output host string = split(aiServices.properties.endpoint, '/')[2]

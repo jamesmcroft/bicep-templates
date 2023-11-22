@@ -3,6 +3,8 @@
   "cognitiveServices": "cog-",
   "openAI": "oai-",
   "machineLearningWorkspace": "mlw-",
+  "aiWorkspace": "aiw-",
+  "aiServices": "ais-",
 
   "analysisServicesServer": "as",
   "databricksWorkspace": "dbw-",
