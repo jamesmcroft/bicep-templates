@@ -15,6 +15,13 @@ param resourceGroupName string = ''
 @description('Tags for all resources.')
 param tags object = {}
 
+@description('Value indicating whether the deployment is new or existing.')
+@allowed([
+    'new'
+    'existing'
+])
+param newOrExisting string = 'new'
+
 @description('Name of the Managed Identity. If empty, a unique name will be generated.')
 param managedIdentityName string = ''
 @description('Name of the Storage Account. If empty, a unique name will be generated.')
@@ -39,7 +46,7 @@ var resourceToken = toLower(uniqueString(subscription().id, workloadName, locati
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
     name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourceGroup}${workloadName}'
     location: location
-    tags: tags
+    tags: union(tags, {})
 }
 
 module managedIdentity '../security/managed-identity.bicep' = {
@@ -49,6 +56,16 @@ module managedIdentity '../security/managed-identity.bicep' = {
         name: !empty(managedIdentityName) ? managedIdentityName : '${abbrs.managedIdentity}${resourceToken}'
         location: location
         tags: union(tags, {})
+    }
+}
+
+module resourceGroupContributorAssignment '../security/managed-identity-resourcegroup-role.bicep' = {
+    name: '${managedIdentity.name}-resourcegroup-contributor'
+    scope: resourceGroup
+    params: {
+        identityPrincipalId: managedIdentity.outputs.principalId
+        resourceId: resourceGroup.id
+        roleDefinitionId: roles.contributor
     }
 }
 
@@ -222,7 +239,7 @@ module aiWorkspace '../ai_ml/ai-workspace.bicep' = {
     }
 }
 
-module aiWorkspaceOpenAIEndpoint '../ai_ml/ai-workspace-endpoint.bicep' = {
+module aiWorkspaceOpenAIEndpoint '../ai_ml/ai-workspace-endpoint.bicep' = if(newOrExisting == 'new') {
     name: '${aiWorkspace.name}-openai'
     scope: resourceGroup
     params: {
@@ -234,7 +251,7 @@ module aiWorkspaceOpenAIEndpoint '../ai_ml/ai-workspace-endpoint.bicep' = {
     }
 }
 
-module aiWorkspaceContentSafetyEndpoint '../ai_ml/ai-workspace-endpoint.bicep' = {
+module aiWorkspaceContentSafetyEndpoint '../ai_ml/ai-workspace-endpoint.bicep' = if(newOrExisting == 'new') {
     name: '${aiWorkspace.name}-contentsafety'
     scope: resourceGroup
     params: {
@@ -246,7 +263,7 @@ module aiWorkspaceContentSafetyEndpoint '../ai_ml/ai-workspace-endpoint.bicep' =
     }
 }
 
-module aiWorkspaceSpeechEndpoint '../ai_ml/ai-workspace-endpoint.bicep' = {
+module aiWorkspaceSpeechEndpoint '../ai_ml/ai-workspace-endpoint.bicep' = if(newOrExisting == 'new') {
     name: '${aiWorkspace.name}-speech'
     scope: resourceGroup
     params: {

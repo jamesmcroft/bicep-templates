@@ -35,7 +35,7 @@ var resourceToken = toLower(uniqueString(subscription().id, workloadName, locati
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
     name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourceGroup}${workloadName}'
     location: location
-    tags: tags
+    tags: union(tags, {})
 }
 
 module managedIdentity '../security/managed-identity.bicep' = {
