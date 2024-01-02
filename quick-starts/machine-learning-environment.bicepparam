@@ -1,4 +1,4 @@
 using './machine-learning-environment.bicep'
 
-param workloadName = 'jcml-id'
+param workloadName = 'ml-environment'
 param location = 'uksouth'

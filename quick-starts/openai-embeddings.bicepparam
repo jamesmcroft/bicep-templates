@@ -1,4 +1,4 @@
 using './openai-embeddings.bicep'
 
-param workloadName = 'aoai-embeddings'
-param location = 'westeurope'
+param workloadName = 'oai-embeddings'
+param location = 'uksouth'
