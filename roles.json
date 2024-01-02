@@ -175,7 +175,7 @@
   "azureRelayListener": "26e0b698-aa6d-4085-9386-aadae190014d",
   "azureRelayOwner": "2787bf04-f1f5-4bfe-8383-c8a24483ee38",
   "azureRelaySender": "26baccc8-eea7-41f1-98f4-1762cc7f685d",
-  "azureServiceBusDatOwner": "090c5cfd-751d-490a-894a-3ce6f1109419",
+  "azureServiceBusDataOwner": "090c5cfd-751d-490a-894a-3ce6f1109419",
   "azureServiceBusDataReceiver": "4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0",
   "azureServiceBusDataSender": "69a216fc-b8fb-44d8-bc22-1f3c2cd27a39",
   "azureStackRegistrationOwner": "6f12a6df-dd06-4f3e-bcb1-ce8be600526a",
