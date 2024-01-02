@@ -74,7 +74,7 @@ module storageAccount '../storage/storage-account.bicep' = {
     }
 }
 
-resource keyVaultContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource contributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
     scope: resourceGroup
     name: roles.contributor
 }
@@ -94,7 +94,7 @@ module keyVault '../security/key-vault.bicep' = {
         roleAssignments: [
             {
                 principalId: managedIdentity.outputs.principalId
-                roleDefinitionId: keyVaultContributor.id
+                roleDefinitionId: contributor.id
             }
             {
                 principalId: managedIdentity.outputs.principalId
@@ -137,6 +137,10 @@ module containerRegistry '../containers/container-registry.bicep' = {
         }
         adminUserEnabled: true
         roleAssignments: [
+            {
+                principalId: managedIdentity.outputs.principalId
+                roleDefinitionId: contributor.id
+            }
             {
                 principalId: managedIdentity.outputs.principalId
                 roleDefinitionId: containerRegistryPush.id
