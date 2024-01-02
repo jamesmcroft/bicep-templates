@@ -155,7 +155,7 @@ module applicationInsightsConnectionStringSecret '../security/key-vault-secret.b
 
 resource serviceBusDataOwner 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   scope: resourceGroup
-  name: roles.serviceBusDataOwner
+  name: roles.azureServiceBusDataOwner
 }
 
 module serviceBusNamespace '../integration/service-bus-namespace.bicep' = {
@@ -219,7 +219,7 @@ module containerAppsEnvironment '../containers/container-apps-environment.bicep'
 
 // Add Container App module declarations here. Remember to update the Dapr component scopes to include the container image name if you want to add them to the Dapr sidecar.
 
-module daprPubSubServiceBus '../containers/dapr-pubsub-service-bus.bicep' = {
+module daprPubSubServiceBus '../containers/container-apps-environment-dapr-pubsub-service-bus.bicep' = {
   name: 'dapr-pubsub-servicebus'
   scope: resourceGroup
   params: {
@@ -231,7 +231,7 @@ module daprPubSubServiceBus '../containers/dapr-pubsub-service-bus.bicep' = {
   }
 }
 
-module daprSecretStoreKeyVault '../containers/dapr-secretstore-key-vault.bicep' = {
+module daprSecretStoreKeyVault '../containers/container-apps-environment-dapr-secretstores-key-vault.bicep' = {
   name: 'dapr-secretstore-keyvault'
   scope: resourceGroup
   params: {
