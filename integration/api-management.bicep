@@ -7,8 +7,15 @@ param tags object = {}
 @description('ID for the Managed Identity associated with the API Management resource.')
 param apiManagementIdentityId string
 
+type vnetConfigInfo = {
+  @description('Resource ID of a subnet for the API Management service.')
+  subnetResourceId: string
+  @description('Type of virtual network.')
+  virtualNetworkType: 'Internal' | 'External' | 'None'
+}
+
 type skuInfo = {
-  name: 'Developer' | 'Standard' | 'Premium'
+  name: 'Developer' | 'Standard' | 'Premium' | 'Basic' | 'Consumption' | 'Isolated' | 'BasicV2' | 'StandardV2'
   capacity: 1 | 2
 }
 
@@ -23,6 +30,15 @@ param sku skuInfo = {
   name: 'Developer'
   capacity: 1
 }
+@description('Virtual network configuration for the API Management resource.')
+param vnetConfig vnetConfigInfo = {
+  subnetResourceId: ''
+  virtualNetworkType: 'None'
+}
+@description('Certificates for the API Management resource.')
+param certificates object[] = []
+@description('Hostname configurations for the API Management resource.')
+param hostnameConfigurations object[] = []
 
 resource apiManagement 'Microsoft.ApiManagement/service@2023-03-01-preview' = {
   name: name
@@ -38,6 +54,10 @@ resource apiManagement 'Microsoft.ApiManagement/service@2023-03-01-preview' = {
   properties: {
     publisherEmail: publisherEmail
     publisherName: publisherName
+    virtualNetworkConfiguration: !empty(vnetConfig.subnetResourceId) ? { subnetResourceId: vnetConfig.subnetResourceId } : null
+    certificates: certificates
+    hostnameConfigurations: hostnameConfigurations
+    virtualNetworkType: !empty(vnetConfig.virtualNetworkType) ? vnetConfig.virtualNetworkType : 'None'
   }
 }
 
@@ -49,3 +69,7 @@ output id string = apiManagement.id
 output name string = apiManagement.name
 @description('Gateway URL for the deployed API Management resource.')
 output gatewayUrl string = apiManagement.properties.gatewayUrl
+@description('Host for the deployed API Management resource.')
+output host string = split(apiManagement.properties.gatewayUrl, '/')[2]
+@description('Private IP address for the deployed API Management resource.')
+output privateIp string = apiManagement.properties.privateIPAddresses[0]
