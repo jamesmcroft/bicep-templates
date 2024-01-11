@@ -10,14 +10,9 @@ type roleAssignmentInfo = {
   principalId: string
 }
 
-type keyVaultSecretInfo = {
-  name: string
-  property: 'PrimaryKey'
-}
-
 type keyVaultSecretsInfo = {
-  name: string
-  secrets: keyVaultSecretInfo[]
+  keyVaultName: string
+  primaryKeySecretName: string
 }
 
 @description('Cognitive Services SKU. Defaults to S0.')
@@ -55,9 +50,9 @@ param deployments array = []
 ])
 param publicNetworkAccess string = 'Enabled'
 @description('Properties to store in a Key Vault.')
-param keyVaultSecrets keyVaultSecretsInfo = {
-  name: ''
-  secrets: []
+param keyVaultConfig keyVaultSecretsInfo = {
+  keyVaultName: ''
+  primaryKeySecretName: ''
 }
 @description('Role assignments to create for the Cognitive Service instance.')
 param roleAssignments roleAssignmentInfo[] = []
@@ -88,14 +83,14 @@ resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2023-10-01
   }
 }]
 
-module keyVaultSecret '../security/key-vault-secret.bicep' = [for secret in keyVaultSecrets.secrets: {
-  name: '${secret.name}-secret'
+module primaryKeySecret '../security/key-vault-secret.bicep' = if (!empty(keyVaultConfig.primaryKeySecretName)) {
+  name: '${keyVaultConfig.primaryKeySecretName}-secret'
   params: {
-    keyVaultName: keyVaultSecrets.?name!
-    name: secret.name
-    value: secret.property == 'PrimaryKey' ? cognitiveServices.listKeys().key1 : ''
+    keyVaultName: keyVaultConfig.keyVaultName
+    name: keyVaultConfig.primaryKeySecretName
+    value: cognitiveServices.listKeys().key1
   }
-}]
+}
 
 resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for roleAssignment in roleAssignments: {
   name: guid(cognitiveServices.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)

@@ -5,6 +5,11 @@ param location string = resourceGroup().location
 @description('Tags for the resource.')
 param tags object = {}
 
+type roleAssignmentInfo = {
+  roleDefinitionId: string
+  principalId: string
+}
+
 type skuInfo = {
   name: 'free' | 'basic' | 'standard' | 'standard2' | 'standard3' | 'storage_optimized_l1' | 'storage_optimized_l2'
 }
@@ -33,6 +38,8 @@ param partitionCount int = 1
   'highDensity'
 ])
 param hostingMode string = 'default'
+@description('Role assignments to create for the Cognitive Search instance.')
+param roleAssignments roleAssignmentInfo[] = []
 
 resource search 'Microsoft.Search/searchServices@2022-09-01' = {
   name: name
@@ -43,8 +50,23 @@ resource search 'Microsoft.Search/searchServices@2022-09-01' = {
     replicaCount: replicaCount
     partitionCount: partitionCount
     hostingMode: hostingMode
+    authOptions: {
+      aadOrApiKey: {
+        aadAuthFailureMode: 'http403'
+      }
+    }
   }
 }
+
+resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for roleAssignment in roleAssignments: {
+  name: guid(search.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
+  scope: search
+  properties: {
+    principalId: roleAssignment.principalId
+    roleDefinitionId: roleAssignment.roleDefinitionId
+    principalType: 'ServicePrincipal'
+  }
+}]
 
 @description('The deployed Cognitive Search resource.')
 output resource resource = search
