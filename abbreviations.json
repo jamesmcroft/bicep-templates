@@ -10,7 +10,7 @@
   "contentSafety": "cs-",
   "customVisionPrediction": "cstv-",
   "customVisionTraining": "cstvt-",
-  "documentIntelligence": "di",
+  "documentIntelligence": "di-",
   "faceApi": "face-",
   "healthInsights": "hi-",
   "immersiveReader": "ir-",
