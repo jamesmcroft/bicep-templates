@@ -15,6 +15,8 @@ param identityId string
 param linuxFxVersion string = 'DOTNET-ISOLATED|8.0'
 @description('Public network access for the Function App. Defaults to Enabled.')
 param publicNetworkAccess string = 'Enabled'
+@description('Always On setting for the Function App. Defaults to false.')
+param alwaysOn bool = false
 
 resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
   name: name
@@ -32,7 +34,7 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
     siteConfig: {
       appSettings: appSettings
       linuxFxVersion: linuxFxVersion
-      alwaysOn: true
+      alwaysOn: alwaysOn
     }
     keyVaultReferenceIdentity: identityId
     httpsOnly: true
