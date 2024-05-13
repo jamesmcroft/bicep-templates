@@ -1,3 +1,5 @@
+import { roleAssignmentInfo } from '../security/managed-identity.bicep'
+
 @description('Name of the resource.')
 param name string
 @description('Location to deploy the resource. Defaults to the location of the resource group.')
@@ -5,53 +7,53 @@ param location string = resourceGroup().location
 @description('Tags for the resource.')
 param tags object = {}
 
-type roleAssignmentInfo = {
-    roleDefinitionId: string
-    principalId: string
-}
-
+@export()
+@description('SKU information for Container Registry.')
 type skuInfo = {
-    name: 'Basic' | 'Premium' | 'Standard'
+  @description('Name of the SKU.')
+  name: 'Basic' | 'Premium' | 'Standard'
 }
 
 @description('Whether to enable an admin user that has push and pull access. Defaults to false.')
 param adminUserEnabled bool = false
 @description('Whether to allow public network access. Defaults to Enabled.')
 @allowed([
-    'Disabled'
-    'Enabled'
+  'Disabled'
+  'Enabled'
 ])
 param publicNetworkAccess string = 'Enabled'
 @description('Container Registry SKU. Defaults to Basic.')
 param sku skuInfo = {
-    name: 'Basic'
+  name: 'Basic'
 }
 @description('Role assignments to create for the Container Registry.')
 param roleAssignments roleAssignmentInfo[] = []
 
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-12-01' = {
-    name: name
-    location: location
-    tags: tags
-    identity: {
-        type: 'SystemAssigned'
-    }
-    sku: sku
-    properties: {
-        adminUserEnabled: adminUserEnabled
-        publicNetworkAccess: publicNetworkAccess
-    }
+  name: name
+  location: location
+  tags: tags
+  identity: {
+    type: 'SystemAssigned'
+  }
+  sku: sku
+  properties: {
+    adminUserEnabled: adminUserEnabled
+    publicNetworkAccess: publicNetworkAccess
+  }
 }
 
-resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for roleAssignment in roleAssignments: {
+resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleAssignment in roleAssignments: {
     name: guid(containerRegistry.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
     scope: containerRegistry
     properties: {
-        principalId: roleAssignment.principalId
-        roleDefinitionId: roleAssignment.roleDefinitionId
-        principalType: 'ServicePrincipal'
+      principalId: roleAssignment.principalId
+      roleDefinitionId: roleAssignment.roleDefinitionId
+      principalType: 'ServicePrincipal'
     }
-}]
+  }
+]
 
 @description('The deployed Container Registry resource.')
 output resource resource = containerRegistry

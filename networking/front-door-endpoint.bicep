@@ -1,18 +1,30 @@
 @export()
+@description('Information about the Front Door Endpoint routes.')
 type routeInfo = {
+  @description('Name of the route.')
   name: string
+  @description('Name of the origin group associated with the route.')
   originGroupName: string
+  @description('Protocols supported by the route.')
   supportedProtocols: ('Http' | 'Https')[]
+  @description('Patterns to match for the route.')
   patternsToMatch: string[]
+  @description('Forwarding protocol for the route.')
   forwardingProtocol: 'MatchRequest' | 'HttpOnly' | 'HttpsOnly'
+  @description('Whether to link to the default domain.')
   linkToDefaultDomain: 'Enabled' | 'Disabled'
+  @description('Whether to redirect to HTTPS.')
   httpsRedirect: 'Enabled' | 'Disabled'
+  @description('Whether the route is enabled.')
   enabledState: 'Enabled' | 'Disabled'
 }
 
 @export()
+@description('Information about the Front Door Endpoint.')
 type endpointInfo = {
+  @description('Name of the Endpoint.')
   name: string
+  @description('Routes associated with the Endpoint.')
   routes: routeInfo[]
 }
 
@@ -33,20 +45,22 @@ resource frontDoorEndpoint 'Microsoft.Cdn/profiles/afdEndpoints@2021-06-01' = {
     enabledState: 'Enabled'
   }
 
-  resource frontDoorRoute 'routes@2021-06-01' = [for route in endpoint.routes: {
-    name: route.name
-    properties: {
-      originGroup: {
-        id: resourceId('Microsoft.Cdn/profiles/originGroups', frontDoorName, route.originGroupName)
+  resource frontDoorRoute 'routes@2021-06-01' = [
+    for route in endpoint.routes: {
+      name: route.name
+      properties: {
+        originGroup: {
+          id: resourceId('Microsoft.Cdn/profiles/originGroups', frontDoorName, route.originGroupName)
+        }
+        supportedProtocols: route.supportedProtocols
+        patternsToMatch: route.patternsToMatch
+        forwardingProtocol: route.forwardingProtocol
+        linkToDefaultDomain: route.linkToDefaultDomain
+        httpsRedirect: route.httpsRedirect
+        enabledState: route.enabledState
       }
-      supportedProtocols: route.supportedProtocols
-      patternsToMatch: route.patternsToMatch
-      forwardingProtocol: route.forwardingProtocol
-      linkToDefaultDomain: route.linkToDefaultDomain
-      httpsRedirect: route.httpsRedirect
-      enabledState: route.enabledState
     }
-  }]
+  ]
 }
 
 @description('The deployed Front Door Endpoint resource.')

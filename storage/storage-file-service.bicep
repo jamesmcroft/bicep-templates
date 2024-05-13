@@ -5,12 +5,12 @@ param name string = 'default'
 param storageAccountName string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
-    name: storageAccountName
+  name: storageAccountName
 }
 
 resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2022-09-01' = {
-    name: name
-    parent: storageAccount
+  name: name
+  parent: storageAccount
 }
 
 @description('The deployed Storage file service resource.')

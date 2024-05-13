@@ -5,18 +5,18 @@ param name string
 param storageAccountName string
 @description('Public access level for the blob container.')
 @allowed([
-    'Blob'
-    'Container'
-    'None'
+  'Blob'
+  'Container'
+  'None'
 ])
 param publicAccess string = 'None'
 
 resource container 'Microsoft.Storage/storageAccounts/blobServices/containers@2022-09-01' = {
-    name: '${storageAccountName}/default/${name}'
-    properties: {
-        publicAccess: publicAccess
-        metadata: {}
-    }
+  name: '${storageAccountName}/default/${name}'
+  properties: {
+    publicAccess: publicAccess
+    metadata: {}
+  }
 }
 
 @description('The deployed Storage blob container resource.')

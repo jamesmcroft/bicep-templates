@@ -6,7 +6,10 @@ param name string
 @description('Tags for the resource.')
 param tags object = {}
 
+@export()
+@description('SKU information for Front Door.')
 type skuInfo = {
+  @description('Name of the SKU.')
   name: 'Standard_AzureFrontDoor' | 'Premium_AzureFrontDoor'
 }
 
@@ -26,24 +29,28 @@ resource frontDoor 'Microsoft.Cdn/profiles@2021-06-01' = {
   sku: sku
 }
 
-module originGroup 'front-door-origin-group.bicep' = [for originGroup in originGroups: {
-  name: originGroup.name
-  params: {
-    frontDoorName: frontDoor.name
-    originGroup: originGroup
+module originGroup 'front-door-origin-group.bicep' = [
+  for originGroup in originGroups: {
+    name: originGroup.name
+    params: {
+      frontDoorName: frontDoor.name
+      originGroup: originGroup
+    }
   }
-}]
+]
 
-module endpoint 'front-door-endpoint.bicep' = [for endpoint in endpoints: {
-  name: endpoint.name
-  params: {
-    frontDoorName: frontDoor.name
-    endpoint: endpoint
+module endpoint 'front-door-endpoint.bicep' = [
+  for endpoint in endpoints: {
+    name: endpoint.name
+    params: {
+      frontDoorName: frontDoor.name
+      endpoint: endpoint
+    }
+    dependsOn: [
+      originGroup
+    ]
   }
-  dependsOn: [
-    originGroup
-  ]
-}]
+]
 
 @description('The deployed Front Door resource.')
 output resource resource = frontDoor

@@ -12,26 +12,30 @@ param kind string = 'app,linux'
 @description('App settings for the Web App.')
 param appSettings array = []
 @description('ID for the Managed Identity associated with the Web App.')
-param webAppIdentityId string
+param identityId string
+@description('Public network access for the Web App. Defaults to Enabled.')
+param publicNetworkAccess string = 'Enabled'
 
 resource webApp 'Microsoft.Web/sites@2022-03-01' = {
-    name: name
-    location: location
-    tags: tags
-    kind: kind
-    identity: {
-        type: 'UserAssigned'
-        userAssignedIdentities: {
-            '${webAppIdentityId}': {}
-        }
+  name: name
+  location: location
+  tags: tags
+  kind: kind
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${identityId}': {}
     }
-    properties: {
-        serverFarmId: appServicePlanId
-        siteConfig: {
-            appSettings: appSettings
-        }
-        keyVaultReferenceIdentity: webAppIdentityId
+  }
+  properties: {
+    serverFarmId: appServicePlanId
+    siteConfig: {
+      appSettings: appSettings
     }
+    keyVaultReferenceIdentity: identityId
+    httpsOnly: true
+    publicNetworkAccess: publicNetworkAccess
+  }
 }
 
 @description('The deployed Web App resource.')
@@ -40,5 +44,5 @@ output resource resource = webApp
 output id string = webApp.id
 @description('Name for the deployed Web App resource.')
 output name string = webApp.name
-@description('URL for the deployed Web App resource.')
-output url string = webApp.properties.defaultHostName
+@description('Host for the deployed Web App resource.')
+output host string = webApp.properties.defaultHostName

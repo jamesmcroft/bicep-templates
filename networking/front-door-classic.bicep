@@ -3,6 +3,8 @@ param name string
 @description('Tags for the resource.')
 param tags object = {}
 
+@export()
+@description('Information about the backend to be added to the Front Door resource.')
 type backendInfo = {
   address: string
   httpPort: int

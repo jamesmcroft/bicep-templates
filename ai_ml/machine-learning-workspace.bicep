@@ -18,25 +18,25 @@ param enableHealthBehaviorInsight bool = false
 @description('ID for the Managed Identity associated with the ML workspace.')
 param identityId string
 
-resource mlWorkspace 'Microsoft.MachineLearningServices/workspaces@2022-10-01' = {
-    name: name
-    location: location
-    tags: tags
-    identity: {
-        type: 'UserAssigned'
-        userAssignedIdentities: {
-            '${identityId}': {}
-        }
+resource mlWorkspace 'Microsoft.MachineLearningServices/workspaces@2023-10-01' = {
+  name: name
+  location: location
+  tags: tags
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${identityId}': {}
     }
-    properties: {
-        friendlyName: name
-        storageAccount: storageAccountId
-        keyVault: keyVaultId
-        applicationInsights: applicationInsightsId
-        containerRegistry: containerRegistryId
-        hbiWorkspace: enableHealthBehaviorInsight
-        primaryUserAssignedIdentity: identityId
-    }
+  }
+  properties: {
+    friendlyName: name
+    storageAccount: storageAccountId
+    keyVault: keyVaultId
+    applicationInsights: applicationInsightsId
+    containerRegistry: containerRegistryId
+    hbiWorkspace: enableHealthBehaviorInsight
+    primaryUserAssignedIdentity: identityId
+  }
 }
 
 @description('The deployed ML workspace resource.')

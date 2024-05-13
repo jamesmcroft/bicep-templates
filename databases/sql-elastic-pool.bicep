@@ -5,13 +5,21 @@ param location string = resourceGroup().location
 @description('Tags for the resource.')
 param tags object = {}
 
+@export()
+@description('SKU information for SQL Elastic Pool.')
 type skuInfo = {
+  @description('Name of the SKU.')
   name: 'BasicPool' | 'Standard' | 'Premium' | 'GP_Gen5' | 'BC_Gen5'
+  @description('Capacity of the SKU.')
   capacity: int?
 }
 
+@export()
+@description('Information about the per database configuration for the SQL Elastic Pool.')
 type perDatabaseConfigInfo = {
+  @description('Minimum capacity.')
   minCapacity: int
+  @description('Maximum capacity.')
   maxCapacity: int
 }
 

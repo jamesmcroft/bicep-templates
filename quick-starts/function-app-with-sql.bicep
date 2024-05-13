@@ -1,15 +1,5 @@
 targetScope = 'subscription'
 
-type appSettingInfo = {
-  name: string
-  value: string
-}
-
-type appSettingsInfo = {
-  values: appSettingInfo[]
-  functionApp: string[]
-}
-
 @minLength(1)
 @maxLength(64)
 @description('Name of the workload which is used to generate a short unique hash used in all resources.')
@@ -25,30 +15,27 @@ param resourceGroupName string = ''
 @description('Tags for all resources.')
 param tags object = {}
 
-@description('Name of the Managed Identity. If empty, a unique name will be generated.')
-param managedIdentityName string = ''
-@description('Name of the Key Vault. If empty, a unique name will be generated.')
-param keyVaultName string = ''
-@description('Name of the Log Analytics Workspace. If empty, a unique name will be generated.')
-param logAnalyticsWorkspaceName string = ''
-@description('Name of the Application Insights. If empty, a unique name will be generated.')
-param applicationInsightsName string = ''
-@description('Name of the Storage Account. If empty, a unique name will be generated.')
-param storageAccountName string = ''
-@description('Name of the SQL Server. If empty, a unique name will be generated.')
-param sqlServerName string = ''
+@description('Information about an app setting to store in Key Vault.')
+type appSettingInfo = {
+  @description('Name of the app setting.')
+  name: string
+  @description('Value of the app setting.')
+  value: string
+}
+
+@description('Information about the app settings for the function app to store in Key Vault.')
+type appSettingsInfo = {
+  @description('App settings for the function app.')
+  values: appSettingInfo[]
+  @description('Names of all the variables in the Key Vault to assign to the function app.')
+  functionApp: string[]
+}
+
 @description('Name of the SQL Server admin username. Defaults to sqladmin.')
 param sqlServerAdminUsername string = 'sqladmin'
 @description('Name of the SQL Server admin password.')
 @secure()
 param sqlServerAdminPassword string
-@description('Name of the SQL Database. If empty, a unique name will be generated.')
-param sqlDatabaseName string = ''
-@description('Name of the App Service Plan. If empty, a unique name will be generated.')
-param appServicePlanName string = ''
-@description('Name of the Function App. If empty, a unique name will be generated.')
-param functionAppName string = ''
-
 @description('App Settings to be stored in the Key Vault and applied to the Function App.')
 param appSettings appSettingsInfo = {
   values: []
@@ -60,16 +47,16 @@ var roles = loadJsonContent('../roles.json')
 var resourceToken = toLower(uniqueString(subscription().id, workloadName, location))
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourceGroup}${workloadName}'
+  name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.managementGovernance.resourceGroup}${workloadName}'
   location: location
   tags: union(tags, {})
 }
 
 module managedIdentity '../security/managed-identity.bicep' = {
-  name: !empty(managedIdentityName) ? managedIdentityName : '${abbrs.managedIdentity}${resourceToken}'
+  name: '${abbrs.security.managedIdentity}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(managedIdentityName) ? managedIdentityName : '${abbrs.managedIdentity}${resourceToken}'
+    name: '${abbrs.security.managedIdentity}${resourceToken}'
     location: location
     tags: union(tags, {})
   }
@@ -77,14 +64,14 @@ module managedIdentity '../security/managed-identity.bicep' = {
 
 resource keyVaultSecretsOfficer 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   scope: resourceGroup
-  name: roles.keyVaultSecretsOfficer
+  name: roles.security.keyVaultSecretsOfficer
 }
 
 module keyVault '../security/key-vault.bicep' = {
-  name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVault}${resourceToken}'
+  name: '${abbrs.security.keyVault}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVault}${resourceToken}'
+    name: '${abbrs.security.keyVault}${resourceToken}'
     location: location
     tags: union(tags, {})
     roleAssignments: [
@@ -96,48 +83,98 @@ module keyVault '../security/key-vault.bicep' = {
   }
 }
 
-module appSettingSecret '../security/key-vault-secret.bicep' = [for setting in appSettings.values: {
-  name: '${setting.name}-secret'
-  scope: resourceGroup
-  params: {
-    name: setting.name
-    keyVaultName: keyVaultName
-    value: setting.value
+module appSettingSecret '../security/key-vault-secret.bicep' = [
+  for setting in appSettings.values: {
+    name: '${setting.name}-secret'
+    scope: resourceGroup
+    params: {
+      name: setting.name
+      keyVaultName: keyVault.outputs.name
+      value: setting.value
+    }
   }
-  dependsOn: [
-    keyVault
-  ]
-}]
+]
 
 module logAnalyticsWorkspace '../management_governance/log-analytics-workspace.bicep' = {
-  name: !empty(logAnalyticsWorkspaceName) ? logAnalyticsWorkspaceName : '${abbrs.logAnalyticsWorkspace}${resourceToken}'
+  name: '${abbrs.managementGovernance.logAnalyticsWorkspace}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(logAnalyticsWorkspaceName) ? logAnalyticsWorkspaceName : '${abbrs.logAnalyticsWorkspace}${resourceToken}'
+    name: '${abbrs.managementGovernance.logAnalyticsWorkspace}${resourceToken}'
     location: location
     tags: union(tags, {})
-    applicationInsightsName: !empty(applicationInsightsName) ? applicationInsightsName : '${abbrs.applicationInsights}${resourceToken}'
   }
 }
 
-module storageAccount '../storage/storage-account.bicep' = {
-  name: !empty(storageAccountName) ? storageAccountName : '${abbrs.storageAccount}${resourceToken}'
+module applicationInsights '../management_governance/application-insights.bicep' = {
+  name: '${abbrs.managementGovernance.applicationInsights}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(storageAccountName) ? storageAccountName : '${abbrs.storageAccount}${resourceToken}'
+    name: '${abbrs.managementGovernance.applicationInsights}${resourceToken}'
+    location: location
+    tags: union(tags, {})
+    logAnalyticsWorkspaceName: logAnalyticsWorkspace.outputs.name
+  }
+}
+
+// Required RBAC roles for Azure Functions to access the storage account
+// https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob&pivots=programming-language-csharp#connecting-to-host-storage-with-an-identity
+
+resource storageAccountContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  scope: resourceGroup
+  name: roles.storage.storageAccountContributor
+}
+
+resource storageBlobDataOwner 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  scope: resourceGroup
+  name: roles.storage.storageBlobDataOwner
+}
+
+resource storageQueueDataContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  scope: resourceGroup
+  name: roles.storage.storageQueueDataContributor
+}
+
+resource storageTableDataContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  scope: resourceGroup
+  name: roles.storage.storageTableDataContributor
+}
+
+module storageAccount '../storage/storage-account.bicep' = {
+  name: '${abbrs.storage.storageAccount}${resourceToken}'
+  scope: resourceGroup
+  params: {
+    name: '${abbrs.storage.storageAccount}${resourceToken}'
     location: location
     tags: union(tags, {})
     sku: {
       name: 'Standard_LRS'
     }
+    roleAssignments: [
+      {
+        principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: storageAccountContributor.id
+      }
+      {
+        principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: storageBlobDataOwner.id
+      }
+      {
+        principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: storageQueueDataContributor.id
+      }
+      {
+        principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: storageTableDataContributor.id
+      }
+    ]
   }
 }
 
 module sqlServer '../databases/sql-server.bicep' = {
-  name: !empty(sqlServerName) ? sqlServerName : '${abbrs.sqlDatabaseServer}${resourceToken}'
+  name: '${abbrs.databases.sqlDatabaseServer}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(sqlServerName) ? sqlServerName : '${abbrs.sqlDatabaseServer}${resourceToken}'
+    name: '${abbrs.databases.sqlDatabaseServer}${resourceToken}'
     location: location
     tags: union(tags, {})
     adminUsername: sqlServerAdminUsername
@@ -146,93 +183,142 @@ module sqlServer '../databases/sql-server.bicep' = {
 }
 
 module sqlDatabase '../databases/sql-database.bicep' = {
-  name: !empty(sqlDatabaseName) ? sqlDatabaseName : '${abbrs.sqlDatabase}${resourceToken}'
+  name: '${abbrs.databases.sqlDatabase}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(sqlDatabaseName) ? sqlDatabaseName : '${abbrs.sqlDatabase}${resourceToken}'
+    name: '${abbrs.databases.sqlDatabase}${resourceToken}'
     location: location
     tags: union(tags, {})
-    sqlServerName: sqlServer.name
+    sqlServerName: sqlServer.outputs.name
   }
-  dependsOn: [
-    sqlServer
-  ]
 }
 
 module appServicePlan '../compute/app-service-plan.bicep' = {
-  name: !empty(appServicePlanName) ? appServicePlanName : '${abbrs.appServicePlan}${resourceToken}'
+  name: '${abbrs.compute.appServicePlan}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(appServicePlanName) ? appServicePlanName : '${abbrs.appServicePlan}${resourceToken}'
+    name: '${abbrs.compute.appServicePlan}${resourceToken}'
     location: location
     tags: union(tags, {})
-    sku: {
-      name: 'Y1'
-    }
-    kind: 'functionapp'
   }
 }
 
 module functionAppSettings '../security/key-vault-secret-environment-variables.bicep' = {
-  name: '${!empty(functionAppName) ? functionAppName : '${abbrs.functionApp}${resourceToken}'}-settings'
+  name: '${abbrs.compute.functionApp}${resourceToken}-settings'
   scope: resourceGroup
   params: {
     keyVaultSecretUri: keyVault.outputs.uri
     variableNames: appSettings.functionApp
   }
-  dependsOn: [
-    keyVault
-  ]
 }
 
 module functionApp '../compute/function-app.bicep' = {
-  name: !empty(functionAppName) ? functionAppName : '${abbrs.functionApp}${resourceToken}'
+  name: '${abbrs.compute.functionApp}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(functionAppName) ? functionAppName : '${abbrs.functionApp}${resourceToken}'
+    name: '${abbrs.compute.functionApp}${resourceToken}'
     location: location
     tags: union(tags, {})
-    functionAppIdentityId: managedIdentity.outputs.id
+    identityId: managedIdentity.outputs.id
     appServicePlanId: appServicePlan.outputs.id
-    appSettings: concat([
-        {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: logAnalyticsWorkspace.outputs.instrumentationKey
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: logAnalyticsWorkspace.outputs.connectionString
-        }
-        {
-          name: 'AzureWebJobsStorage'
-          value: storageAccount.outputs.connectionString
-        }
+    appSettings: concat(
+      [
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
           value: '~4'
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'dotnet'
+          value: 'dotnet-isolated'
         }
         {
-          name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1'
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: applicationInsights.outputs.connectionString
+        }
+        {
+          name: 'AzureWebJobsStorage__accountName'
+          value: storageAccount.outputs.name
+        }
+        {
+          name: 'AzureWebJobsStorage__credential'
+          value: 'managedidentity'
+        }
+        {
+          name: 'AzureWebJobsStorage__clientId'
+          value: managedIdentity.outputs.clientId
+        }
+        {
+          name: 'ManagedIdentityClientId'
+          value: managedIdentity.outputs.clientId
         }
         {
           name: 'SqlServerConnectionString'
           value: '${sqlDatabase.outputs.connectionString};User ID=${sqlServerAdminUsername};Password=${sqlServerAdminPassword};'
         }
         {
-          name: 'StorageAccountConnectionString'
-          value: storageAccount.outputs.connectionString
+          name: 'StorageAccountName'
+          value: storageAccount.outputs.name
         }
-      ], functionAppSettings.outputs.environmentVariables)
+      ],
+      functionAppSettings.outputs.environmentVariables
+    )
   }
-  dependsOn: [
-    logAnalyticsWorkspace
-    appServicePlan
-    storageAccount
-    keyVault
-  ]
+}
+
+output subscriptionInfo object = {
+  id: subscription().subscriptionId
+  tenantId: subscription().tenantId
+}
+
+output resourceGroupInfo object = {
+  id: resourceGroup.id
+  name: resourceGroup.name
+  location: resourceGroup.location
+  workloadName: workloadName
+}
+
+output managedIdentityInfo object = {
+  id: managedIdentity.outputs.id
+  name: managedIdentity.outputs.name
+  principalId: managedIdentity.outputs.principalId
+  clientId: managedIdentity.outputs.clientId
+}
+
+output keyVaultInfo object = {
+  id: keyVault.outputs.id
+  name: keyVault.outputs.name
+  uri: keyVault.outputs.uri
+}
+
+output logAnalyticsWorkspaceInfo object = {
+  id: logAnalyticsWorkspace.outputs.id
+  name: logAnalyticsWorkspace.outputs.name
+  customerId: logAnalyticsWorkspace.outputs.customerId
+}
+
+output applicationInsightsInfo object = {
+  id: applicationInsights.outputs.id
+  name: applicationInsights.outputs.name
+}
+
+output storageAccountInfo object = {
+  id: storageAccount.outputs.id
+  name: storageAccount.outputs.name
+}
+
+output sqlServerInfo object = {
+  id: sqlServer.outputs.id
+  name: sqlServer.outputs.name
+  databaseName: sqlDatabase.outputs.name
+}
+
+output appServicePlanInfo object = {
+  id: appServicePlan.outputs.id
+  name: appServicePlan.outputs.name
+}
+
+output functionAppInfo object = {
+  id: functionApp.outputs.id
+  name: functionApp.outputs.name
+  host: functionApp.outputs.host
 }

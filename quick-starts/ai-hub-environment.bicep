@@ -35,6 +35,16 @@ module managedIdentity '../security/managed-identity.bicep' = {
   }
 }
 
+module resourceGroupContributorRoleAssignment '../security/managed-identity-resourcegroup-role.bicep' = {
+  name: '${managedIdentity.name}-resourcegroup-contributor'
+  scope: resourceGroup
+  params: {
+    identityPrincipalId: managedIdentity.outputs.principalId
+    resourceId: resourceGroup.id
+    roleDefinitionId: roles.general.contributor
+  }
+}
+
 resource storageBlobDataContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   scope: resourceGroup
   name: roles.storage.storageBlobDataContributor
@@ -144,18 +154,79 @@ module containerRegistry '../containers/container-registry.bicep' = {
   }
 }
 
-module machineLearningWorkspace '../ai_ml/machine-learning-workspace.bicep' = {
-  name: '${abbrs.ai.machineLearningWorkspace}${resourceToken}'
+resource cognitiveServicesOpenAIContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  scope: resourceGroup
+  name: roles.ai.cognitiveServicesOpenAIContributor
+}
+
+resource cognitiveServicesOpenAIUser 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  scope: resourceGroup
+  name: roles.ai.cognitiveServicesOpenAIUser
+}
+
+var completionsModelDeploymentName = 'gpt-35-turbo'
+var embeddingModelDeploymentName = 'text-embedding-ada-002'
+
+module aiServices '../ai_ml/ai-services.bicep' = {
+  name: '${abbrs.ai.aiServices}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: '${abbrs.ai.machineLearningWorkspace}${resourceToken}'
+    name: '${abbrs.ai.aiServices}${resourceToken}'
+    location: location
+    tags: union(tags, {})
+    deployments: [
+      {
+        name: completionsModelDeploymentName
+        model: {
+          format: 'OpenAI'
+          name: 'gpt-35-turbo'
+          version: '1106'
+        }
+        sku: {
+          name: 'Standard'
+          capacity: 30
+        }
+      }
+      {
+        name: embeddingModelDeploymentName
+        model: {
+          format: 'OpenAI'
+          name: 'text-embedding-ada-002'
+          version: '2'
+        }
+        sku: {
+          name: 'Standard'
+          capacity: 1
+        }
+      }
+    ]
+    roleAssignments: [
+      {
+        principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: cognitiveServicesOpenAIContributor.id
+      }
+      {
+        principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: cognitiveServicesOpenAIUser.id
+      }
+    ]
+  }
+}
+
+module aiHub '../ai_ml/ai-hub.bicep' = {
+  name: '${abbrs.ai.aiHub}${resourceToken}'
+  scope: resourceGroup
+  params: {
+    name: '${abbrs.ai.aiHub}${resourceToken}'
     location: location
     tags: union(tags, {})
     identityId: managedIdentity.outputs.id
+    identityClientId: managedIdentity.outputs.clientId
     storageAccountId: storageAccount.outputs.id
     keyVaultId: keyVault.outputs.id
     applicationInsightsId: applicationInsights.outputs.id
     containerRegistryId: containerRegistry.outputs.id
+    aiServicesName: aiServices.outputs.name
   }
 }
 
@@ -206,7 +277,16 @@ output containerRegistryInfo object = {
   loginServer: containerRegistry.outputs.loginServer
 }
 
-output machineLearningWorkspaceInfo object = {
-  id: machineLearningWorkspace.outputs.id
-  name: machineLearningWorkspace.outputs.name
+output aiServicesInfo object = {
+  id: aiServices.outputs.id
+  name: aiServices.outputs.name
+  endpoint: aiServices.outputs.endpoint
+  host: aiServices.outputs.host
+  completionsModelDeploymentName: completionsModelDeploymentName
+  embeddingModelDeploymentName: embeddingModelDeploymentName
+}
+
+output aiHubInfo object = {
+  id: aiHub.outputs.id
+  name: aiHub.outputs.name
 }

@@ -11,29 +11,29 @@ param identityClientId string
 param scopes array = []
 
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01' existing = {
-    name: containerAppsEnvironmentName
+  name: containerAppsEnvironmentName
 }
 
 resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2023-05-01' = {
-    name: name
-    parent: containerAppsEnvironment
-    properties: {
-        componentType: 'secretstores.azure.keyvault'
-        version: 'v1'
-        ignoreErrors: false
-        initTimeout: '5s'
-        metadata: [
-            {
-                name: 'vaultName'
-                value: keyVaultName
-            }
-            {
-                name: 'azureClientId'
-                value: identityClientId
-            }
-        ]
-        scopes: scopes
-    }
+  name: name
+  parent: containerAppsEnvironment
+  properties: {
+    componentType: 'secretstores.azure.keyvault'
+    version: 'v1'
+    ignoreErrors: false
+    initTimeout: '5s'
+    metadata: [
+      {
+        name: 'vaultName'
+        value: keyVaultName
+      }
+      {
+        name: 'azureClientId'
+        value: identityClientId
+      }
+    ]
+    scopes: scopes
+  }
 }
 
 @description('The deployed Dapr component resource.')

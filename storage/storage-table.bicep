@@ -5,7 +5,7 @@ param name string
 param storageAccountName string
 
 resource table 'Microsoft.Storage/storageAccounts/tableServices/tables@2022-09-01' = {
-    name: '${storageAccountName}/default/${name}'
+  name: '${storageAccountName}/default/${name}'
 }
 
 @description('The deployed Storage table resource.')

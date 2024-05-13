@@ -5,77 +5,68 @@ param location string = resourceGroup().location
 @description('Tags for the resource.')
 param tags object = {}
 
+@export()
+@description('Information about the configuration for a custom domain in the environment.')
 type customDomainConfigInfo = {
-    @description('Name of the custom domain.')
-    dnsSuffix: string
-    @description('Value of the custom domain certificate.')
-    certificateValue: string
-    @description('Password for the custom domain certificate.')
-    certificatePassword: string
+  @description('Name of the custom domain.')
+  dnsSuffix: string
+  @description('Value of the custom domain certificate.')
+  certificateValue: string
+  @description('Password for the custom domain certificate.')
+  certificatePassword: string
 }
 
+@export()
+@description('Information about the configuration for a virtual network in the environment.')
 type vnetConfigInfo = {
-    @description('CIDR notation IP range assigned to the Docker bridge network.')
-    dockerBridgeCidr: string
-    @description('Resource ID of a subnet for infrastructure components.')
-    infrastructureSubnetId: string
-    @description('Value indicating whether the environment only has an internal load balancer.')
-    internal: bool
-    @description('IP range in CIDR notation that can be reserved for environment infrastructure IP addresses.')
-    platformReservedCidr: string
-    @description('IP address from the IP range that will be reserved for the internal DNS server.')
-    platformReservedDnsIP: string
+  @description('Resource ID of a subnet for infrastructure components.')
+  infrastructureSubnetId: string
+  @description('Value indicating whether the environment only has an internal load balancer.')
+  internal: bool
 }
 
-type logAnalyticsConfigInfo = {
-    customerId: string
-    sharedKey: string?
-}
-
-@description('Log Analytics configuration to store application logs.')
-param logAnalyticsConfig logAnalyticsConfigInfo = {
-    customerId: ''
-    sharedKey: ''
-}
+@description('Name of the Log Analytics Workspace to store application logs.')
+param logAnalyticsWorkspaceName string
 @description('Custom domain configuration for the environment.')
 param customDomainConfig customDomainConfigInfo = {
-    dnsSuffix: ''
-    certificateValue: ''
-    certificatePassword: ''
+  dnsSuffix: ''
+  certificateValue: ''
+  certificatePassword: ''
 }
 @description('Virtual network configuration for the environment.')
 param vnetConfig vnetConfigInfo = {
-    dockerBridgeCidr: ''
-    infrastructureSubnetId: ''
-    internal: false
-    platformReservedCidr: ''
-    platformReservedDnsIP: ''
+  infrastructureSubnetId: ''
+  internal: true
 }
 @description('Value indicating whether the environment is zone-redundant. Defaults to false.')
 param zoneRedundant bool = false
 
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+  name: logAnalyticsWorkspaceName
+}
+
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01' = {
-    name: name
-    location: location
-    tags: tags
-    properties: {
-        appLogsConfiguration: !empty(logAnalyticsConfig.sharedKey) ? {
-            destination: 'log-analytics'
-            logAnalyticsConfiguration: {
-                customerId: logAnalyticsConfig.customerId
-                sharedKey: logAnalyticsConfig.sharedKey
-            }
-        } : {}
-        workloadProfiles: [
-            {
-                name: 'Consumption'
-                workloadProfileType: 'Consumption'
-            }
-        ]
-        customDomainConfiguration: !empty(customDomainConfig.dnsSuffix) ? customDomainConfig : {}
-        vnetConfiguration: !empty(vnetConfig.infrastructureSubnetId) ? vnetConfig : {}
-        zoneRedundant: zoneRedundant
+  name: name
+  location: location
+  tags: tags
+  properties: {
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: logAnalyticsWorkspace.properties.customerId
+        sharedKey: logAnalyticsWorkspace.listKeys().primarySharedKey
+      }
     }
+    workloadProfiles: [
+      {
+        name: 'Consumption'
+        workloadProfileType: 'Consumption'
+      }
+    ]
+    customDomainConfiguration: !empty(customDomainConfig.dnsSuffix) ? customDomainConfig : {}
+    vnetConfiguration: !empty(vnetConfig.infrastructureSubnetId) ? vnetConfig : {}
+    zoneRedundant: zoneRedundant
+  }
 }
 
 @description('The deployed Container Apps Environment resource.')

@@ -5,24 +5,27 @@ param location string = resourceGroup().location
 @description('Tags for the resource.')
 param tags object = {}
 
+@export()
+@description('SKU information for Static Web App.')
 type skuInfo = {
-    name: 'Free' | 'Standard'
+  @description('Name of the SKU.')
+  name: 'Free' | 'Standard'
 }
 
 @description('Static Web App SKU. Defaults to Free.')
 param sku skuInfo = {
-    name: 'Free'
+  name: 'Free'
 }
 
 resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' = {
-    name: name
-    location: location
-    tags: tags
-    sku: sku
-    properties: {
-        allowConfigFileUpdates: true
-        stagingEnvironmentPolicy: 'Disabled'
-    }
+  name: name
+  location: location
+  tags: tags
+  sku: sku
+  properties: {
+    allowConfigFileUpdates: true
+    stagingEnvironmentPolicy: 'Disabled'
+  }
 }
 
 @description('The deployed Static Web App resource.')

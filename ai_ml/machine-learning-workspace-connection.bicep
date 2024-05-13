@@ -1,9 +1,27 @@
 @export()
+@description('Connection information for the AI/ML workspace.')
 type connectionInfo = {
+  @description('Name of the connection.')
   name: string
-  category: 'ADLSGen2' | 'ApiKey' | 'AzureMySqlDb' | 'AzureOpenAI' | 'AzurePostgresDb' | 'AzureSqlDb' | 'AzureSynapseAnalytics' | 'CognitiveSearch' | 'CognitiveService' | 'ContainerRegistry' | 'CustomKeys' | 'Git' | 'PythonFeed' | 'Redis' | 'S3' | 'Snowflake'
+  @description('Category of the connection.')
+  category: string
+  @description('Target of the connection.')
   target: string
-  authType: 'AccessKey' | 'ApiKey' | 'CustomKeys' | 'ManagedIdentity' | 'None' | 'PAT' | 'SAS' | 'ServicePrincipal' | 'UsernamePassword'
+  @description('Authentication type for the connection target.')
+  authType:
+    | 'AAD'
+    | 'AccessKey'
+    | 'AccountKey'
+    | 'ApiKey'
+    | 'CustomKeys'
+    | 'ManagedIdentity'
+    | 'None'
+    | 'OAuth2'
+    | 'PAT'
+    | 'SAS'
+    | 'ServicePrincipal'
+    | 'UsernamePassword'
+  @description('Credentials for the connection target.')
   credentials: object?
 }
 
@@ -12,10 +30,10 @@ param workspaceName string
 @description('Connection information.')
 param connection connectionInfo
 
-resource workspace 'Microsoft.MachineLearningServices/workspaces@2023-06-01-preview' existing = {
+resource workspace 'Microsoft.MachineLearningServices/workspaces@2023-10-01' existing = {
   name: workspaceName
 
-  resource workspaceConnection 'connections' = {
+  resource workspaceConnection 'connections@2024-01-01-preview' = {
     name: connection.name
     properties: {
       category: connection.category

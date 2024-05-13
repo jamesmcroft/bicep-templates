@@ -3,6 +3,8 @@ param name string
 @description('Tags for the resource.')
 param tags object = {}
 
+@export()
+@description('Information about an A record to be created in the DNS zone.')
 type aRecordInfo = {
   @description('Name of the A record.')
   name: string
@@ -41,18 +43,20 @@ resource link 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01'
   }
 }
 
-resource aRecord 'Microsoft.Network/privateDnsZones/A@2020-06-01' = [for aRecord in aRecords: {
-  name: aRecord.name
-  parent: dnsZone
-  properties: {
-    ttl: aRecord.ttl
-    aRecords: [
-      {
-        ipv4Address: aRecord.ipv4Address
-      }
-    ]
+resource aRecord 'Microsoft.Network/privateDnsZones/A@2020-06-01' = [
+  for aRecord in aRecords: {
+    name: aRecord.name
+    parent: dnsZone
+    properties: {
+      ttl: aRecord.ttl
+      aRecords: [
+        {
+          ipv4Address: aRecord.ipv4Address
+        }
+      ]
+    }
   }
-}]
+]
 
 @description('The deployed DNS Zone resource.')
 output resource resource = dnsZone

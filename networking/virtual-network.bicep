@@ -6,11 +6,9 @@ param location string = resourceGroup().location
 param tags object = {}
 
 @description('List of address blocks reserved for this virtual network in CIDR notation.')
-param addressPrefixes string[]
-@description('List of subnets in this virtual network.')
-param subnets object[]
+param addressPrefixes string[] = ['10.0.0.0/16']
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-11-01' = {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-04-01' = {
   name: name
   location: location
   tags: tags
@@ -18,12 +16,9 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-11-01' = {
     addressSpace: {
       addressPrefixes: addressPrefixes
     }
-    subnets: subnets
   }
 }
 
-@description('The deployed Virtual Network resource.')
-output resource resource = virtualNetwork
 @description('ID for the deployed Virtual Network resource.')
 output id string = virtualNetwork.id
 @description('Name for the deployed Virtual Network resource.')

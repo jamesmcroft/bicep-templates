@@ -6,16 +6,16 @@ param resourceId string
 param roleDefinitionId string
 
 resource roleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-    scope: resourceGroup()
-    name: roleDefinitionId
+  scope: resourceGroup()
+  name: roleDefinitionId
 }
 
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-    name: guid(resourceId, identityPrincipalId, roleDefinition.id)
-    scope: resourceGroup()
-    properties: {
-        principalId: identityPrincipalId
-        roleDefinitionId: roleDefinition.id
-        principalType: 'ServicePrincipal'
-    }
+  name: guid(resourceId, identityPrincipalId, roleDefinition.id)
+  scope: resourceGroup()
+  properties: {
+    principalId: identityPrincipalId
+    roleDefinitionId: roleDefinition.id
+    principalType: 'ServicePrincipal'
+  }
 }

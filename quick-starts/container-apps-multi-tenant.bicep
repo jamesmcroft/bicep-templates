@@ -1,14 +1,5 @@
 targetScope = 'subscription'
 
-type appSettingInfo = {
-  name: string
-  value: string
-}
-
-type appSettingsInfo = {
-  values: appSettingInfo[]
-}
-
 @minLength(1)
 @maxLength(64)
 @description('Name of the workload which is used to generate a short unique hash used in all resources.')
@@ -24,50 +15,27 @@ param resourceGroupName string = ''
 @description('Tags for all resources.')
 param tags object = {}
 
-@description('Name of the Managed Identity. If empty, a unique name will be generated.')
-param managedIdentityName string = ''
-@description('Name of the Container Registry. If empty, a unique name will be generated.')
-param containerRegistryName string = ''
-@description('Name of the Log Analytics Workspace. If empty, a unique name will be generated.')
-param logAnalyticsWorkspaceName string = ''
-@description('Name of the Application Insights. If empty, a unique name will be generated.')
-param applicationInsightsName string = ''
-@description('Name of the Service Bus Namespace. If empty, a unique name will be generated.')
-param serviceBusNamespaceName string = ''
-@description('Name of the SQL Server. If empty, a unique name will be generated.')
-param sqlServerName string = ''
 @description('Name of the SQL Server admin username. Defaults to sqladmin.')
 param sqlServerAdminUsername string = 'sqladmin'
 @description('Name of the SQL Server admin password.')
 @secure()
 param sqlServerAdminPassword string
-@description('Name of the SQL Elastic Pool. If empty, a unique name will be generated.')
-param sqlElasticPoolName string = ''
-@description('Name of the Key Vault. If empty, a unique name will be generated.')
-param keyVaultName string = ''
-@description('Name of the Container Apps Environment. If empty, a unique name will be generated.')
-param containerAppsEnvironmentName string = ''
-
-@description('App Settings to be stored in the Key Vault.')
-param appSettings appSettingsInfo = {
-  values: []
-}
 
 var abbrs = loadJsonContent('../abbreviations.json')
 var roles = loadJsonContent('../roles.json')
 var resourceToken = toLower(uniqueString(subscription().id, workloadName, location))
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourceGroup}${workloadName}'
+  name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.managementGovernance.resourceGroup}${workloadName}'
   location: location
   tags: union(tags, {})
 }
 
 module managedIdentity '../security/managed-identity.bicep' = {
-  name: !empty(managedIdentityName) ? managedIdentityName : '${abbrs.managedIdentity}${resourceToken}'
+  name: '${abbrs.security.managedIdentity}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(managedIdentityName) ? managedIdentityName : '${abbrs.managedIdentity}${resourceToken}'
+    name: '${abbrs.security.managedIdentity}${resourceToken}'
     location: location
     tags: union(tags, {})
   }
@@ -75,14 +43,14 @@ module managedIdentity '../security/managed-identity.bicep' = {
 
 resource keyVaultSecretsOfficer 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   scope: resourceGroup
-  name: roles.keyVaultSecretsOfficer
+  name: roles.security.keyVaultSecretsOfficer
 }
 
 module keyVault '../security/key-vault.bicep' = {
-  name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVault}${resourceToken}'
+  name: '${abbrs.security.keyVault}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVault}${resourceToken}'
+    name: '${abbrs.security.keyVault}${resourceToken}'
     location: location
     tags: union(tags, {})
     roleAssignments: [
@@ -94,29 +62,16 @@ module keyVault '../security/key-vault.bicep' = {
   }
 }
 
-module appSettingSecret '../security/key-vault-secret.bicep' = [for setting in appSettings.values: {
-  name: '${setting.name}-secret'
+resource acrPull 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   scope: resourceGroup
-  params: {
-    name: setting.name
-    keyVaultName: keyVaultName
-    value: setting.value
-  }
-  dependsOn: [
-    keyVault
-  ]
-}]
-
-resource containerRegistryPull 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  scope: resourceGroup
-  name: roles.acrPull
+  name: roles.containers.acrPull
 }
 
 module containerRegistry '../containers/container-registry.bicep' = {
-  name: !empty(containerRegistryName) ? containerRegistryName : '${abbrs.containerRegistry}${resourceToken}'
+  name: '${abbrs.containers.containerRegistry}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(containerRegistryName) ? containerRegistryName : '${abbrs.containerRegistry}${resourceToken}'
+    name: '${abbrs.containers.containerRegistry}${resourceToken}'
     location: location
     tags: union(tags, {})
     sku: {
@@ -126,43 +81,43 @@ module containerRegistry '../containers/container-registry.bicep' = {
     roleAssignments: [
       {
         principalId: managedIdentity.outputs.principalId
-        roleDefinitionId: containerRegistryPull.id
+        roleDefinitionId: acrPull.id
       }
     ]
   }
 }
 
 module logAnalyticsWorkspace '../management_governance/log-analytics-workspace.bicep' = {
-  name: !empty(logAnalyticsWorkspaceName) ? logAnalyticsWorkspaceName : '${abbrs.logAnalyticsWorkspace}${resourceToken}'
+  name: '${abbrs.managementGovernance.logAnalyticsWorkspace}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(logAnalyticsWorkspaceName) ? logAnalyticsWorkspaceName : '${abbrs.logAnalyticsWorkspace}${resourceToken}'
+    name: '${abbrs.managementGovernance.logAnalyticsWorkspace}${resourceToken}'
     location: location
     tags: union(tags, {})
-    applicationInsightsName: !empty(applicationInsightsName) ? applicationInsightsName : '${abbrs.applicationInsights}${resourceToken}'
   }
 }
 
-module applicationInsightsConnectionStringSecret '../security/key-vault-secret.bicep' = {
-  name: 'ApplicationInsightsConnectionString-secret'
+module applicationInsights '../management_governance/application-insights.bicep' = {
+  name: '${abbrs.managementGovernance.applicationInsights}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: 'ApplicationInsightsConnectionString'
-    keyVaultName: keyVault.name
-    value: logAnalyticsWorkspace.outputs.connectionString
+    name: '${abbrs.managementGovernance.applicationInsights}${resourceToken}'
+    location: location
+    tags: union(tags, {})
+    logAnalyticsWorkspaceName: logAnalyticsWorkspace.outputs.name
   }
 }
 
-resource serviceBusDataOwner 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource azureServiceBusDataOwner 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   scope: resourceGroup
-  name: roles.azureServiceBusDataOwner
+  name: roles.integration.azureServiceBusDataOwner
 }
 
 module serviceBusNamespace '../integration/service-bus-namespace.bicep' = {
-  name: !empty(serviceBusNamespaceName) ? serviceBusNamespaceName : '${abbrs.serviceBusNamespace}${resourceToken}'
+  name: '${abbrs.integration.serviceBusNamespace}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(serviceBusNamespaceName) ? serviceBusNamespaceName : '${abbrs.serviceBusNamespace}${resourceToken}'
+    name: '${abbrs.integration.serviceBusNamespace}${resourceToken}'
     location: location
     tags: union(tags, {})
     sku: {
@@ -171,17 +126,17 @@ module serviceBusNamespace '../integration/service-bus-namespace.bicep' = {
     roleAssignments: [
       {
         principalId: managedIdentity.outputs.principalId
-        roleDefinitionId: serviceBusDataOwner.id
+        roleDefinitionId: azureServiceBusDataOwner.id
       }
     ]
   }
 }
 
 module sqlServer '../databases/sql-server.bicep' = {
-  name: !empty(sqlServerName) ? sqlServerName : '${abbrs.sqlDatabaseServer}${resourceToken}'
+  name: '${abbrs.databases.sqlDatabaseServer}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(sqlServerName) ? sqlServerName : '${abbrs.sqlDatabaseServer}${resourceToken}'
+    name: '${abbrs.databases.sqlDatabaseServer}${resourceToken}'
     location: location
     tags: union(tags, {})
     adminUsername: sqlServerAdminUsername
@@ -190,10 +145,10 @@ module sqlServer '../databases/sql-server.bicep' = {
 }
 
 module sqlElasticPool '../databases/sql-elastic-pool.bicep' = {
-  name: !empty(sqlElasticPoolName) ? sqlElasticPoolName : '${abbrs.sqlElasticPool}${resourceToken}'
+  name: '${abbrs.databases.sqlElasticPool}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(sqlElasticPoolName) ? sqlElasticPoolName : '${abbrs.sqlElasticPool}${resourceToken}'
+    name: '${abbrs.databases.sqlElasticPool}${resourceToken}'
     location: location
     tags: union(tags, {})
     sku: {
@@ -204,28 +159,23 @@ module sqlElasticPool '../databases/sql-elastic-pool.bicep' = {
 }
 
 module containerAppsEnvironment '../containers/container-apps-environment.bicep' = {
-  name: !empty(containerAppsEnvironmentName) ? containerAppsEnvironmentName : '${abbrs.containerAppsEnvironment}${resourceToken}'
+  name: '${abbrs.containers.containerAppsEnvironment}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: !empty(containerAppsEnvironmentName) ? containerAppsEnvironmentName : '${abbrs.containerAppsEnvironment}${resourceToken}'
+    name: '${abbrs.containers.containerAppsEnvironment}${resourceToken}'
     location: location
     tags: union(tags, {})
-    logAnalyticsConfig: {
-      customerId: logAnalyticsWorkspace.outputs.customerId
-      sharedKey: logAnalyticsWorkspace.outputs.sharedKey
-    }
+    logAnalyticsWorkspaceName: logAnalyticsWorkspace.outputs.name
   }
 }
-
-// Add Container App module declarations here. Remember to update the Dapr component scopes to include the container image name if you want to add them to the Dapr sidecar.
 
 module daprPubSubServiceBus '../containers/container-apps-environment-dapr-pubsub-service-bus.bicep' = {
   name: 'dapr-pubsub-servicebus'
   scope: resourceGroup
   params: {
     name: 'dapr-pubsub-servicebus'
-    containerAppsEnvironmentName: containerAppsEnvironment.name
-    serviceBusConnectionString: serviceBusNamespace.outputs.connectionString
+    containerAppsEnvironmentName: containerAppsEnvironment.outputs.name
+    serviceBusNamespaceName: serviceBusNamespace.outputs.name
     identityClientId: managedIdentity.outputs.clientId
     scopes: []
   }
@@ -236,9 +186,71 @@ module daprSecretStoreKeyVault '../containers/container-apps-environment-dapr-se
   scope: resourceGroup
   params: {
     name: 'dapr-secretstore-keyvault'
-    containerAppsEnvironmentName: containerAppsEnvironment.name
-    keyVaultName: keyVaultName
+    containerAppsEnvironmentName: containerAppsEnvironment.outputs.name
+    keyVaultName: keyVault.outputs.name
     identityClientId: managedIdentity.outputs.clientId
     scopes: []
   }
+}
+
+output subscriptionInfo object = {
+  id: subscription().subscriptionId
+  tenantId: subscription().tenantId
+}
+
+output resourceGroupInfo object = {
+  id: resourceGroup.id
+  name: resourceGroup.name
+  location: resourceGroup.location
+  workloadName: workloadName
+}
+
+output managedIdentityInfo object = {
+  id: managedIdentity.outputs.id
+  name: managedIdentity.outputs.name
+  principalId: managedIdentity.outputs.principalId
+  clientId: managedIdentity.outputs.clientId
+}
+
+output keyVaultInfo object = {
+  id: keyVault.outputs.id
+  name: keyVault.outputs.name
+  uri: keyVault.outputs.uri
+}
+
+output containerRegistryInfo object = {
+  id: containerRegistry.outputs.id
+  name: containerRegistry.outputs.name
+  loginServer: containerRegistry.outputs.loginServer
+}
+
+output logAnalyticsWorkspaceInfo object = {
+  id: logAnalyticsWorkspace.outputs.id
+  name: logAnalyticsWorkspace.outputs.name
+  customerId: logAnalyticsWorkspace.outputs.customerId
+}
+
+output applicationInsightsInfo object = {
+  id: applicationInsights.outputs.id
+  name: applicationInsights.outputs.name
+}
+
+output serviceBusNamespaceInfo object = {
+  id: serviceBusNamespace.outputs.id
+  name: serviceBusNamespace.outputs.name
+}
+
+output sqlServerInfo object = {
+  id: sqlServer.outputs.id
+  name: sqlServer.outputs.name
+  elasticPoolName: sqlElasticPool.outputs.name
+}
+
+output containerAppsEnvironmentInfo object = {
+  id: containerAppsEnvironment.outputs.id
+  name: containerAppsEnvironment.outputs.name
+  defaultDomain: containerAppsEnvironment.outputs.defaultDomain
+  staticIp: containerAppsEnvironment.outputs.staticIp
+  daprPubSubName: daprPubSubServiceBus.outputs.name
+  daprSecretStoreName: daprSecretStoreKeyVault.outputs.name
 }

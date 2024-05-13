@@ -7,6 +7,8 @@ param tags object = {}
 @description('ID for the Managed Identity associated with the API Management resource.')
 param apiManagementIdentityId string
 
+@export()
+@description('Information about the configuration for a virtual network for the API Management service.')
 type vnetConfigInfo = {
   @description('Resource ID of a subnet for the API Management service.')
   subnetResourceId: string
@@ -14,8 +16,12 @@ type vnetConfigInfo = {
   virtualNetworkType: 'Internal' | 'External' | 'None'
 }
 
+@export()
+@description('SKU information for API Management.')
 type skuInfo = {
+  @description('Name of the SKU.')
   name: 'Developer' | 'Standard' | 'Premium' | 'Basic' | 'Consumption' | 'Isolated' | 'BasicV2' | 'StandardV2'
+  @description('Capacity of the SKU.')
   capacity: 1 | 2
 }
 
@@ -54,7 +60,9 @@ resource apiManagement 'Microsoft.ApiManagement/service@2023-03-01-preview' = {
   properties: {
     publisherEmail: publisherEmail
     publisherName: publisherName
-    virtualNetworkConfiguration: !empty(vnetConfig.subnetResourceId) ? { subnetResourceId: vnetConfig.subnetResourceId } : null
+    virtualNetworkConfiguration: !empty(vnetConfig.subnetResourceId)
+      ? { subnetResourceId: vnetConfig.subnetResourceId }
+      : null
     certificates: certificates
     hostnameConfigurations: hostnameConfigurations
     virtualNetworkType: !empty(vnetConfig.virtualNetworkType) ? vnetConfig.virtualNetworkType : 'None'
