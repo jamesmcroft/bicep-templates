@@ -221,7 +221,6 @@ module aiHub '../ai_ml/ai-hub.bicep' = {
     location: location
     tags: union(tags, {})
     identityId: managedIdentity.outputs.id
-    identityClientId: managedIdentity.outputs.clientId
     storageAccountId: storageAccount.outputs.id
     keyVaultId: keyVault.outputs.id
     applicationInsightsId: applicationInsights.outputs.id

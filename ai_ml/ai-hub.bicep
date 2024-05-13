@@ -15,8 +15,6 @@ param applicationInsightsId string
 param containerRegistryId string
 @description('ID for the Managed Identity associated with the AI Hub.')
 param identityId string
-@description('Client ID for the Managed Identity associated with the AI Hub.')
-param identityClientId string
 @description('Name for the AI Services resource to connect to.')
 param aiServicesName string
 
@@ -53,15 +51,11 @@ resource aiHub 'Microsoft.MachineLearningServices/workspaces@2023-10-01' = {
     properties: {
       category: 'AzureOpenAI'
       target: aiServices.properties.endpoint
-      authType: 'ManagedIdentity'
+      authType: 'AAD'
       isSharedToAll: true
       metadata: {
         ApiType: 'Azure'
         ResourceId: aiServices.id
-      }
-      credentials: {
-        resourceId: identityId
-        clientId: identityClientId
       }
     }
   }
