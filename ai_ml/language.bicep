@@ -15,10 +15,10 @@ param tags object = {}
 param publicNetworkAccess string = 'Enabled'
 @description('Whether to disable local (key-based) authentication. Defaults to true.')
 param disableLocalAuth bool = true
-@description('Role assignments to create for the Text Analytics resource.')
+@description('Role assignments to create for the Language resource.')
 param roleAssignments roleAssignmentInfo[] = []
 
-resource textAnalytics 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = {
+resource language 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = {
   name: name
   location: location
   tags: tags
@@ -40,8 +40,8 @@ resource textAnalytics 'Microsoft.CognitiveServices/accounts@2023-10-01-preview'
 
 resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleAssignment in roleAssignments: {
-    name: guid(textAnalytics.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
-    scope: textAnalytics
+    name: guid(language.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
+    scope: language
     properties: {
       principalId: roleAssignment.principalId
       roleDefinitionId: roleAssignment.roleDefinitionId
@@ -50,13 +50,13 @@ resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   }
 ]
 
-@description('The deployed Text Analytics resource.')
-output resource resource = textAnalytics
-@description('ID for the deployed Text Analytics resource.')
-output id string = textAnalytics.id
-@description('Name for the deployed Text Analytics resource.')
-output name string = textAnalytics.name
-@description('Endpoint for the deployed Text Analytics resource.')
-output endpoint string = textAnalytics.properties.endpoint
-@description('Host for the deployed Text Analytics resource.')
-output host string = split(textAnalytics.properties.endpoint, '/')[2]
+@description('The deployed Language resource.')
+output resource resource = language
+@description('ID for the deployed Language resource.')
+output id string = language.id
+@description('Name for the deployed Language resource.')
+output name string = language.name
+@description('Endpoint for the deployed Language resource.')
+output endpoint string = language.properties.endpoint
+@description('Host for the deployed Language resource.')
+output host string = split(language.properties.endpoint, '/')[2]
