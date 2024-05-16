@@ -57,6 +57,7 @@ module keyVault '../security/key-vault.bicep' = {
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: keyVaultSecretsOfficer.id
+        principalType: 'ServicePrincipal'
       }
     ]
   }
@@ -82,6 +83,7 @@ module containerRegistry '../containers/container-registry.bicep' = {
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: acrPull.id
+        principalType: 'ServicePrincipal'
       }
     ]
   }
@@ -127,6 +129,7 @@ module serviceBusNamespace '../integration/service-bus-namespace.bicep' = {
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: azureServiceBusDataOwner.id
+        principalType: 'ServicePrincipal'
       }
     ]
   }

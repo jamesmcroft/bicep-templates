@@ -90,7 +90,7 @@ resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
     properties: {
       principalId: roleAssignment.principalId
       roleDefinitionId: roleAssignment.roleDefinitionId
-      principalType: 'ServicePrincipal'
+      principalType: roleAssignment.principalType
     }
   }
 ]

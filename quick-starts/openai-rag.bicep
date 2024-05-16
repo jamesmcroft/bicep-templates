@@ -54,6 +54,7 @@ module keyVault '../security/key-vault.bicep' = {
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: keyVaultAdministrator.id
+        principalType: 'ServicePrincipal'
       }
     ]
   }
@@ -109,10 +110,12 @@ module openAI '../ai_ml/openai.bicep' = {
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: cognitiveServicesOpenAIContributor.id
+        principalType: 'ServicePrincipal'
       }
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: cognitiveServicesOpenAIUser.id
+        principalType: 'ServicePrincipal'
       }
     ]
   }
@@ -137,6 +140,7 @@ module storageAccount '../storage/storage-account.bicep' = {
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: storageBlobDataContributor.id
+        principalType: 'ServicePrincipal'
       }
     ]
     blobContainerRetention: {

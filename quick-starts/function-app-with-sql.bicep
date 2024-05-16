@@ -78,6 +78,7 @@ module keyVault '../security/key-vault.bicep' = {
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: keyVaultSecretsOfficer.id
+        principalType: 'ServicePrincipal'
       }
     ]
   }
@@ -153,18 +154,22 @@ module storageAccount '../storage/storage-account.bicep' = {
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: storageAccountContributor.id
+        principalType: 'ServicePrincipal'
       }
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: storageBlobDataOwner.id
+        principalType: 'ServicePrincipal'
       }
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: storageQueueDataContributor.id
+        principalType: 'ServicePrincipal'
       }
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: storageTableDataContributor.id
+        principalType: 'ServicePrincipal'
       }
     ]
   }

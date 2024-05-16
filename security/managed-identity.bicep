@@ -12,6 +12,8 @@ type roleAssignmentInfo = {
   roleDefinitionId: string
   @description('Principal ID of the identity to assign to.')
   principalId: string
+  @description('Type of the principal ID.')
+  principalType: 'Device' | 'User' | 'Group' | 'ServicePrincipal' | 'ForeignGroup'
 }
 
 resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
