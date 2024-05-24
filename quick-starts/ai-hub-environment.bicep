@@ -19,6 +19,11 @@ var abbrs = loadJsonContent('../abbreviations.json')
 var roles = loadJsonContent('../roles.json')
 var resourceToken = toLower(uniqueString(subscription().id, workloadName, location))
 
+resource contributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+  scope: resourceGroup
+  name: roles.general.contributor
+}
+
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.managementGovernance.resourceGroup}${workloadName}'
   location: location
@@ -35,16 +40,17 @@ module managedIdentity '../security/managed-identity.bicep' = {
   }
 }
 
-module resourceGroupContributorRoleAssignment '../security/managed-identity-resourcegroup-role.bicep' = {
-  name: '${managedIdentity.name}-resourcegroup-contributor'
+module resouceGroupRoleAssignment '../security/resource-group-role-assignment.bicep' = {
+  name: '${resourceGroup.name}-role-assignment'
   scope: resourceGroup
   params: {
-    roleAssignment: {
-      principalId: managedIdentity.outputs.principalId
-      roleDefinitionId: roles.general.contributor
-      principalType: 'ServicePrincipal'
-    }
-    resourceId: resourceGroup.id
+    roleAssignments: [
+      {
+        principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: contributor.id
+        principalType: 'ServicePrincipal'
+      }
+    ]
   }
 }
 
@@ -73,11 +79,6 @@ module storageAccount '../storage/storage-account.bicep' = {
   }
 }
 
-resource keyVaultContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
-  scope: resourceGroup
-  name: roles.general.contributor
-}
-
 resource keyVaultAdministrator 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   scope: resourceGroup
   name: roles.security.keyVaultAdministrator
@@ -91,11 +92,6 @@ module keyVault '../security/key-vault.bicep' = {
     location: location
     tags: union(tags, {})
     roleAssignments: [
-      {
-        principalId: managedIdentity.outputs.principalId
-        roleDefinitionId: keyVaultContributor.id
-        principalType: 'ServicePrincipal'
-      }
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: keyVaultAdministrator.id
@@ -172,7 +168,7 @@ resource cognitiveServicesOpenAIUser 'Microsoft.Authorization/roleDefinitions@20
   name: roles.ai.cognitiveServicesOpenAIUser
 }
 
-var completionsModelDeploymentName = 'gpt-35-turbo'
+var completionsModelDeploymentName = 'gpt-4'
 var embeddingModelDeploymentName = 'text-embedding-ada-002'
 
 module aiServices '../ai_ml/ai-services.bicep' = {
@@ -187,12 +183,12 @@ module aiServices '../ai_ml/ai-services.bicep' = {
         name: completionsModelDeploymentName
         model: {
           format: 'OpenAI'
-          name: 'gpt-35-turbo'
-          version: '1106'
+          name: 'gpt-4'
+          version: 'turbo-2024-04-09'
         }
         sku: {
           name: 'Standard'
-          capacity: 30
+          capacity: 20
         }
       }
       {
@@ -204,7 +200,7 @@ module aiServices '../ai_ml/ai-services.bicep' = {
         }
         sku: {
           name: 'Standard'
-          capacity: 1
+          capacity: 20
         }
       }
     ]
