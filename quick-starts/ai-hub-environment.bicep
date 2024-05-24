@@ -39,9 +39,12 @@ module resourceGroupContributorRoleAssignment '../security/managed-identity-reso
   name: '${managedIdentity.name}-resourcegroup-contributor'
   scope: resourceGroup
   params: {
-    identityPrincipalId: managedIdentity.outputs.principalId
+    roleAssignment: {
+      principalId: managedIdentity.outputs.principalId
+      roleDefinitionId: roles.general.contributor
+      principalType: 'ServicePrincipal'
+    }
     resourceId: resourceGroup.id
-    roleDefinitionId: roles.general.contributor
   }
 }
 
