@@ -18,7 +18,8 @@
     "languageService": "lang-",
     "speechService": "spch-",
     "translator": "trsl-",
-    "aiHub": "aih-"
+    "aiHub": "aih-",
+    "aiHubProject": "aihp-"
   },
   "analytics": {
     "analysisServicesServer": "as",

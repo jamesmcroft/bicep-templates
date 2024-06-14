@@ -235,6 +235,17 @@ module aiHub '../ai_ml/ai-hub.bicep' = {
   }
 }
 
+module aiHubProject '../ai_ml/ai-hub-project.bicep' = {
+  name: '${abbrs.ai.aiHubProject}${workloadName}'
+  scope: resourceGroup
+  params: {
+    name: '${abbrs.ai.aiHubProject}${workloadName}'
+    location: location
+    tags: union(tags, {})
+    aiHubName: aiHub.outputs.name
+  }
+}
+
 output subscriptionInfo object = {
   id: subscription().subscriptionId
   tenantId: subscription().tenantId
@@ -294,4 +305,9 @@ output aiServicesInfo object = {
 output aiHubInfo object = {
   id: aiHub.outputs.id
   name: aiHub.outputs.name
+}
+
+output aiHubProjectInfo object = {
+  id: aiHubProject.outputs.id
+  name: aiHubProject.outputs.name
 }

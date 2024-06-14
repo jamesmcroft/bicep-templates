@@ -1,0 +1,5 @@
+{
+  "serverless": {
+    "Phi-3-mini-128k-instruct": "azureml://registries/azureml/models/Phi-3-mini-128k-instruct"
+  }
+}
