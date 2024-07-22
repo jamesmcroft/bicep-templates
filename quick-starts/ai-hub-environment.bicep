@@ -1,3 +1,5 @@
+import { modelDeploymentInfo } from '../ai_ml/ai-services.bicep'
+
 targetScope = 'subscription'
 
 @minLength(1)
@@ -15,16 +17,25 @@ param resourceGroupName string = ''
 @description('Tags for all resources.')
 param tags object = {}
 
+@description('Model deployments for the Azure AI Services instance.')
+param aiServiceModelDeployments modelDeploymentInfo[] = [
+  {
+    name: 'gpt-4o'
+    model: { format: 'OpenAI', name: 'gpt-4o', version: '2024-05-13' }
+    sku: { name: 'Standard', capacity: 5 }
+  }
+]
+
 var abbrs = loadJsonContent('../abbreviations.json')
 var roles = loadJsonContent('../roles.json')
 var resourceToken = toLower(uniqueString(subscription().id, workloadName, location))
 
-resource contributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource contributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.general.contributor
 }
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.managementGovernance.resourceGroup}${workloadName}'
   location: location
   tags: union(tags, {})
@@ -54,9 +65,25 @@ module resouceGroupRoleAssignment '../security/resource-group-role-assignment.bi
   }
 }
 
-resource storageBlobDataContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+// Storage account roles required for using Prompt Flow in AI Hubs
+resource storageAccountContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  scope: resourceGroup
+  name: roles.storage.storageAccountContributor
+}
+
+resource storageBlobDataContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.storage.storageBlobDataContributor
+}
+
+resource storageFileDataPrivilegedContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  scope: resourceGroup
+  name: roles.storage.storageFileDataPrivilegedContributor
+}
+
+resource storageTableDataContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  scope: resourceGroup
+  name: roles.storage.storageTableDataContributor
 }
 
 module storageAccount '../storage/storage-account.bicep' = {
@@ -72,14 +99,29 @@ module storageAccount '../storage/storage-account.bicep' = {
     roleAssignments: [
       {
         principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: storageAccountContributor.id
+        principalType: 'ServicePrincipal'
+      }
+      {
+        principalId: managedIdentity.outputs.principalId
         roleDefinitionId: storageBlobDataContributor.id
+        principalType: 'ServicePrincipal'
+      }
+      {
+        principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: storageFileDataPrivilegedContributor.id
+        principalType: 'ServicePrincipal'
+      }
+      {
+        principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: storageTableDataContributor.id
         principalType: 'ServicePrincipal'
       }
     ]
   }
 }
 
-resource keyVaultAdministrator 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource keyVaultAdministrator 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.security.keyVaultAdministrator
 }
@@ -122,12 +164,12 @@ module applicationInsights '../management_governance/application-insights.bicep'
   }
 }
 
-resource acrPush 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource acrPush 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.containers.acrPush
 }
 
-resource acrPull 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource acrPull 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.containers.acrPull
 }
@@ -158,17 +200,22 @@ module containerRegistry '../containers/container-registry.bicep' = {
   }
 }
 
-resource cognitiveServicesOpenAIContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource cognitiveServicesContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  scope: resourceGroup
+  name: roles.ai.cognitiveServicesContributor
+}
+
+resource cognitiveServicesOpenAIContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.ai.cognitiveServicesOpenAIContributor
 }
 
-resource cognitiveServicesOpenAIUser 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource cognitiveServicesOpenAIUser 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.ai.cognitiveServicesOpenAIUser
 }
 
-var completionsModelDeploymentName = 'gpt-4'
+var completionsModelDeploymentName = 'gpt-4o'
 var embeddingModelDeploymentName = 'text-embedding-ada-002'
 
 module aiServices '../ai_ml/ai-services.bicep' = {
@@ -178,33 +225,14 @@ module aiServices '../ai_ml/ai-services.bicep' = {
     name: '${abbrs.ai.aiServices}${resourceToken}'
     location: location
     tags: union(tags, {})
-    deployments: [
-      {
-        name: completionsModelDeploymentName
-        model: {
-          format: 'OpenAI'
-          name: 'gpt-4'
-          version: 'turbo-2024-04-09'
-        }
-        sku: {
-          name: 'Standard'
-          capacity: 20
-        }
-      }
-      {
-        name: embeddingModelDeploymentName
-        model: {
-          format: 'OpenAI'
-          name: 'text-embedding-ada-002'
-          version: '2'
-        }
-        sku: {
-          name: 'Standard'
-          capacity: 20
-        }
-      }
-    ]
+    identityId: managedIdentity.outputs.id
+    deployments: aiServiceModelDeployments
     roleAssignments: [
+      {
+        principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: cognitiveServicesContributor.id
+        principalType: 'ServicePrincipal'
+      }
       {
         principalId: managedIdentity.outputs.principalId
         roleDefinitionId: cognitiveServicesOpenAIContributor.id
@@ -219,11 +247,18 @@ module aiServices '../ai_ml/ai-services.bicep' = {
   }
 }
 
+resource azureMLDataScientist 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  scope: resourceGroup
+  name: roles.ai.azureMLDataScientist
+}
+
 module aiHub '../ai_ml/ai-hub.bicep' = {
   name: '${abbrs.ai.aiHub}${resourceToken}'
   scope: resourceGroup
   params: {
     name: '${abbrs.ai.aiHub}${resourceToken}'
+    friendlyName: 'Quickstart - AI Hub'
+    descriptionInfo: 'Generated by the AI Hub Environment Quickstart'
     location: location
     tags: union(tags, {})
     identityId: managedIdentity.outputs.id
@@ -232,17 +267,33 @@ module aiHub '../ai_ml/ai-hub.bicep' = {
     applicationInsightsId: applicationInsights.outputs.id
     containerRegistryId: containerRegistry.outputs.id
     aiServicesName: aiServices.outputs.name
+    roleAssignments: [
+      {
+        principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: azureMLDataScientist.id
+        principalType: 'ServicePrincipal'
+      }
+    ]
   }
 }
 
 module aiHubProject '../ai_ml/ai-hub-project.bicep' = {
-  name: '${abbrs.ai.aiHubProject}${workloadName}'
+  name: '${abbrs.ai.aiHubProject}${resourceToken}'
   scope: resourceGroup
   params: {
-    name: '${abbrs.ai.aiHubProject}${workloadName}'
+    name: '${abbrs.ai.aiHubProject}${resourceToken}'
+    friendlyName: 'Quickstart - AI Hub Project'
+    descriptionInfo: 'Generated by the AI Hub Environment Quickstart'
     location: location
     tags: union(tags, {})
     aiHubName: aiHub.outputs.name
+    roleAssignments: [
+      {
+        principalId: managedIdentity.outputs.principalId
+        roleDefinitionId: azureMLDataScientist.id
+        principalType: 'ServicePrincipal'
+      }
+    ]
   }
 }
 
