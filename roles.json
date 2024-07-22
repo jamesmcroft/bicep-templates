@@ -162,6 +162,8 @@
     "streamAnalyticsQueryTester": "1ec5b3c1-b17e-4e25-8312-2acb3c3c5abf"
   },
   "ai": {
+    "azureAIDeveloper": "64702f94-c441-49e6-a78b-ef80e0188fee",
+    "azureAIInferenceDeploymentOperator": "3afb7f49-54cb-416e-8c09-6dc049efa503",
     "azureMLComputeOperator": "e503ece1-11d0-4e8e-8e2c-7a6c3bf38815",
     "azureMLDataScientist": "f6c7c914-8db3-469d-8ca1-694a8f32e121",
     "cognitiveServicesContributor": "25fbc0a9-bd7c-42a3-aa1a-3b75d497ee68",
