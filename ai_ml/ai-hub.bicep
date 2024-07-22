@@ -1,4 +1,6 @@
+import { roleAssignmentInfo } from '../security/managed-identity.bicep'
 import { serverlessModelDeploymentInfo, serverlessModelDeploymentOutputInfo } from './ai-hub-model-serverless-endpoint.bicep'
+import { connectionInfo } from 'ai-hub-connection.bicep'
 
 @description('Name of the resource.')
 param name string
@@ -44,6 +46,10 @@ param identityId string?
 param aiServicesName string
 @description('Serverless model deployments for the AI Hub.')
 param serverlessModels serverlessModelDeploymentInfo[] = []
+@description('Resource connections associated with the AI Hub.')
+param connections connectionInfo[] = []
+@description('Role assignments to create for the AI Hub instance.')
+param roleAssignments roleAssignmentInfo[] = []
 
 resource aiServices 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' existing = {
   name: aiServicesName
@@ -78,12 +84,13 @@ resource aiHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01-preview'
     applicationInsights: applicationInsightsId
     containerRegistry: containerRegistryId
     systemDatastoresAuthMode: systemDatastoresAuthMode
+    primaryUserAssignedIdentity: identityId
   }
 
   resource aiServicesConnection 'connections@2024-04-01-preview' = {
-    name: '${name}-connection-AzureOpenAI'
+    name: '${aiServicesName}-connection'
     properties: {
-      category: 'AzureOpenAI'
+      category: 'AIServices'
       target: aiServices.properties.endpoint
       authType: 'AAD'
       isSharedToAll: true
@@ -95,6 +102,16 @@ resource aiHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01-preview'
   }
 }
 
+module aiHubConnections 'ai-hub-connection.bicep' = [
+  for connection in connections: {
+    name: connection.name
+    params: {
+      aiHubName: aiHub.name
+      connection: connection
+    }
+  }
+]
+
 module serverlessModelEndpoints 'ai-hub-model-serverless-endpoint.bicep' = [
   for serverlessModel in serverlessModels: {
     name: serverlessModel.name
@@ -103,6 +120,18 @@ module serverlessModelEndpoints 'ai-hub-model-serverless-endpoint.bicep' = [
       aiHubName: aiHub.name
       model: serverlessModel.model
       keyVaultConfig: serverlessModel.keyVaultConfig
+    }
+  }
+]
+
+resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleAssignment in roleAssignments: {
+    name: guid(aiHub.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
+    scope: aiHub
+    properties: {
+      principalId: roleAssignment.principalId
+      roleDefinitionId: roleAssignment.roleDefinitionId
+      principalType: roleAssignment.principalType
     }
   }
 ]
