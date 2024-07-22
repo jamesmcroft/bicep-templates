@@ -7,6 +7,29 @@ param location string = resourceGroup().location
 @description('Tags for the resource.')
 param tags object = {}
 
+@description('Friendly name for the AI Hub.')
+param friendlyName string = name
+@description('Description for the AI Hub.')
+param descriptionInfo string = 'Azure AI Hub'
+@description('Isolation mode for the AI Hub.')
+@allowed([
+  'AllowInternetOutbound'
+  'AllowOnlyApprovedOutbound'
+  'Disabled'
+])
+param isolationMode string = 'Disabled'
+@description('Whether to enable public network access. Defaults to Enabled.')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param publicNetworkAccess string = 'Enabled'
+@description('Whether or not to use credentials for the system datastores of the workspace. Defaults to identity.')
+@allowed([
+  'accessKey'
+  'identity'
+])
+param systemDatastoresAuthMode string = 'identity'
 @description('ID for the Storage Account associated with the AI Hub.')
 param storageAccountId string
 @description('ID for the Key Vault associated with the AI Hub.')
@@ -22,11 +45,11 @@ param aiServicesName string
 @description('Serverless model deployments for the AI Hub.')
 param serverlessModels serverlessModelDeploymentInfo[] = []
 
-resource aiServices 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' existing = {
+resource aiServices 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' existing = {
   name: aiServicesName
 }
 
-resource aiHub 'Microsoft.MachineLearningServices/workspaces@2023-10-01' = {
+resource aiHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01-preview' = {
   name: name
   location: location
   tags: tags
@@ -44,15 +67,20 @@ resource aiHub 'Microsoft.MachineLearningServices/workspaces@2023-10-01' = {
     tier: 'Basic'
   }
   properties: {
-    friendlyName: name
+    friendlyName: friendlyName
+    description: descriptionInfo
+    managedNetwork: {
+      isolationMode: isolationMode
+    }
+    publicNetworkAccess: publicNetworkAccess
     storageAccount: storageAccountId
     keyVault: keyVaultId
     applicationInsights: applicationInsightsId
     containerRegistry: containerRegistryId
-    primaryUserAssignedIdentity: identityId
+    systemDatastoresAuthMode: systemDatastoresAuthMode
   }
 
-  resource aiServicesConnection 'connections@2024-01-01-preview' = {
+  resource aiServicesConnection 'connections@2024-04-01-preview' = {
     name: '${name}-connection-AzureOpenAI'
     properties: {
       category: 'AzureOpenAI'
