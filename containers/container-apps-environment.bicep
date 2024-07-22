@@ -6,6 +6,30 @@ param location string = resourceGroup().location
 param tags object = {}
 
 @export()
+@description('Information about a workload profile for the environment.')
+type workloadProfileInfo = {
+  @description('Friendly name of the workload profile.')
+  name: string
+  @description('Type of the workload profile.')
+  workloadProfileType:
+    | 'D4'
+    | 'D8'
+    | 'D16'
+    | 'D32'
+    | 'E4'
+    | 'E8'
+    | 'E16'
+    | 'E32'
+    | 'NC24-A100'
+    | 'NC48-A100'
+    | 'NC96-A100'
+  @description('Minimum number of nodes for the workload profile.')
+  minimumCount: int
+  @description('Maximum number of nodes for the workload profile.')
+  maximumCount: int
+}
+
+@export()
 @description('Information about the configuration for a custom domain in the environment.')
 type customDomainConfigInfo = {
   @description('Name of the custom domain.')
@@ -25,6 +49,8 @@ type vnetConfigInfo = {
   internal: bool
 }
 
+@description('Additional workload profiles. Includes Consumption by default.')
+param workloadProfiles workloadProfileInfo[] = []
 @description('Name of the Log Analytics Workspace to store application logs.')
 param logAnalyticsWorkspaceName string
 @description('Custom domain configuration for the environment.')
@@ -41,11 +67,11 @@ param vnetConfig vnetConfigInfo = {
 @description('Value indicating whether the environment is zone-redundant. Defaults to false.')
 param zoneRedundant bool = false
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
   name: logAnalyticsWorkspaceName
 }
 
-resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01' = {
+resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: name
   location: location
   tags: tags
@@ -57,12 +83,15 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01'
         sharedKey: logAnalyticsWorkspace.listKeys().primarySharedKey
       }
     }
-    workloadProfiles: [
-      {
-        name: 'Consumption'
-        workloadProfileType: 'Consumption'
-      }
-    ]
+    workloadProfiles: concat(
+      [
+        {
+          name: 'Consumption'
+          workloadProfileType: 'Consumption'
+        }
+      ],
+      workloadProfiles
+    )
     customDomainConfiguration: !empty(customDomainConfig.dnsSuffix) ? customDomainConfig : {}
     vnetConfiguration: !empty(vnetConfig.infrastructureSubnetId) ? vnetConfig : {}
     zoneRedundant: zoneRedundant
