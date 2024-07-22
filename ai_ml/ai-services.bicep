@@ -1,4 +1,5 @@
 import { roleAssignmentInfo } from '../security/managed-identity.bicep'
+import { diagnosticSettingsInfo } from '../management_governance/log-analytics-workspace.bicep'
 
 @description('Name of the resource.')
 param name string
@@ -32,6 +33,8 @@ type modelDeploymentInfo = {
   }?
 }
 
+@description('ID for the Managed Identity associated with the AI Services instance. Defaults to the system-assigned identity.')
+param identityId string?
 @description('List of model deployments.')
 param deployments modelDeploymentInfo[] = []
 @description('Whether to enable public network access. Defaults to Enabled.')
@@ -44,12 +47,22 @@ param publicNetworkAccess string = 'Enabled'
 param disableLocalAuth bool = true
 @description('Role assignments to create for the AI Services instance.')
 param roleAssignments roleAssignmentInfo[] = []
+@description('Diagnostic settings to configure for the AI Services instance.')
+param diagnosticSettings diagnosticSettingsInfo?
 
-resource aiServices 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = {
+resource aiServices 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
   name: name
   location: location
   tags: tags
   kind: 'AIServices'
+  identity: {
+    type: identityId == null ? 'SystemAssigned' : 'UserAssigned'
+    userAssignedIdentities: identityId == null
+      ? null
+      : {
+          '${identityId}': {}
+        }
+  }
   properties: {
     customSubDomainName: toLower(name)
     disableLocalAuth: disableLocalAuth
@@ -66,7 +79,7 @@ resource aiServices 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = 
 }
 
 @batchSize(1)
-resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2023-10-01-preview' = [
+resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = [
   for deployment in deployments: {
     parent: aiServices
     name: deployment.name
@@ -93,6 +106,16 @@ resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   }
 ]
 
+resource aiServicesDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (diagnosticSettings != null) {
+  name: '${aiServices.name}-diagnostic-settings'
+  scope: aiServices
+  properties: {
+    workspaceId: diagnosticSettings!.workspaceId
+    logs: diagnosticSettings!.logs
+    metrics: diagnosticSettings!.metrics
+  }
+}
+
 @description('The deployed AI Services resource.')
 output resource resource = aiServices
 @description('ID for the deployed AI Services resource.')
@@ -103,3 +126,5 @@ output name string = aiServices.name
 output endpoint string = aiServices.properties.endpoint
 @description('Host for the deployed AI Services resource.')
 output host string = split(aiServices.properties.endpoint, '/')[2]
+@description('Principal ID for the deployed AI Services resource.')
+output principalId string = identityId == null ? aiServices.identity.principalId : identityId!
