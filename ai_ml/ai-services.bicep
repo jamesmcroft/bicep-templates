@@ -9,6 +9,75 @@ param location string = resourceGroup().location
 param tags object = {}
 
 @export()
+@description('Information about a Responsible AI policy for AI Services.')
+type raiPolicyInfo = {
+  @description('Name for the Responsible AI policy. Must be unique within AI Services.')
+  name: string
+  @description('Mode for the Responsible AI policy.')
+  mode: 'Blocking' | 'Default' | 'Deferred'
+  prompt: {
+    violence: {
+      allowedContentLevel: 'Low' | 'Medium' | 'High'
+      blocking: bool
+      enabled: bool
+    }?
+    hate: {
+      allowedContentLevel: 'Low' | 'Medium' | 'High'
+      blocking: bool
+      enabled: bool
+    }?
+    sexual: {
+      allowedContentLevel: 'Low' | 'Medium' | 'High'
+      blocking: bool
+      enabled: bool
+    }?
+    selfharm: {
+      allowedContentLevel: 'Low' | 'Medium' | 'High'
+      blocking: bool
+      enabled: bool
+    }?
+    jailbreak: {
+      blocking: bool
+      enabled: bool
+    }?
+    indirect_attack: {
+      blocking: bool
+      enabled: bool
+    }?
+  }?
+  completion: {
+    violence: {
+      allowedContentLevel: 'Low' | 'Medium' | 'High'
+      blocking: bool
+      enabled: bool
+    }?
+    hate: {
+      allowedContentLevel: 'Low' | 'Medium' | 'High'
+      blocking: bool
+      enabled: bool
+    }?
+    sexual: {
+      allowedContentLevel: 'Low' | 'Medium' | 'High'
+      blocking: bool
+      enabled: bool
+    }?
+    selfharm: {
+      allowedContentLevel: 'Low' | 'Medium' | 'High'
+      blocking: bool
+      enabled: bool
+    }?
+    protected_material_text: {
+      blocking: bool
+      enabled: bool
+    }?
+    protected_material_code: {
+      blocking: bool
+      enabled: bool
+    }?
+  }?
+}
+
+@export()
 @description('Information about a model deployment for AI Services.')
 type modelDeploymentInfo = {
   @description('Name for the model deployment. Must be unique within AI Services.')
@@ -31,6 +100,8 @@ type modelDeploymentInfo = {
     @description('TPM quota allocation for the model deployment. For more information on model quota limits per region: https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models')
     capacity: int
   }?
+  @description('Option for upgrading the model deployment version.')
+  versionUpgradeOption: 'NoAutoUpgrade' | 'OnceCurrentVersionExpired' | 'OnceNewDefaultVersionAvailable'
 }
 
 @description('ID for the Managed Identity associated with the AI Services instance. Defaults to the system-assigned identity.')
@@ -45,6 +116,8 @@ param deployments modelDeploymentInfo[] = []
 param publicNetworkAccess string = 'Enabled'
 @description('Whether to disable local (key-based) authentication. Defaults to true.')
 param disableLocalAuth bool = true
+@description('List of Responsible AI policies to apply to the AI Services instance.')
+param raiPolicies raiPolicyInfo[] = []
 @description('Role assignments to create for the AI Services instance.')
 param roleAssignments roleAssignmentInfo[] = []
 @description('Diagnostic settings to configure for the AI Services instance.')
@@ -79,6 +152,100 @@ resource aiServices 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = 
 }
 
 @batchSize(1)
+resource raiPolicy 'Microsoft.CognitiveServices/accounts/raiPolicies@2024-04-01-preview' = [
+  for raiPolicy in raiPolicies: {
+    parent: aiServices
+    name: raiPolicy.name
+    properties: {
+      mode: raiPolicy.mode
+      basePolicyName: 'Microsoft.DefaultV2'
+      contentFilters: [
+        {
+          name: 'violence'
+          allowedContentLevel: raiPolicy.prompt.?violence.?allowedContentLevel
+          blocking: raiPolicy.prompt.?violence.?blocking ?? true
+          enabled: raiPolicy.prompt.?violence.?enabled ?? true
+          source: 'Prompt'
+        }
+        {
+          name: 'violence'
+          allowedContentLevel: raiPolicy.completion.?violence.?allowedContentLevel
+          blocking: raiPolicy.completion.?violence.?blocking ?? true
+          enabled: raiPolicy.completion.?violence.?enabled ?? true
+          source: 'Completion'
+        }
+        {
+          name: 'hate'
+          allowedContentLevel: raiPolicy.prompt.?hate.?allowedContentLevel
+          blocking: raiPolicy.prompt.?hate.?blocking ?? true
+          enabled: raiPolicy.prompt.?hate.?enabled ?? true
+          source: 'Prompt'
+        }
+        {
+          name: 'hate'
+          allowedContentLevel: raiPolicy.completion.?hate.?allowedContentLevel
+          blocking: raiPolicy.completion.?hate.?blocking ?? true
+          enabled: raiPolicy.completion.?hate.?enabled ?? true
+          source: 'Completion'
+        }
+        {
+          name: 'sexual'
+          allowedContentLevel: raiPolicy.prompt.?sexual.?allowedContentLevel
+          blocking: raiPolicy.prompt.?sexual.?blocking ?? true
+          enabled: raiPolicy.prompt.?sexual.?enabled ?? true
+          source: 'Prompt'
+        }
+        {
+          name: 'sexual'
+          allowedContentLevel: raiPolicy.completion.?sexual.?allowedContentLevel
+          blocking: raiPolicy.completion.?sexual.?blocking ?? true
+          enabled: raiPolicy.completion.?sexual.?enabled ?? true
+          source: 'Completion'
+        }
+        {
+          name: 'selfharm'
+          allowedContentLevel: raiPolicy.prompt.?selfharm.?allowedContentLevel
+          blocking: raiPolicy.prompt.?selfharm.?blocking ?? true
+          enabled: raiPolicy.prompt.?selfharm.?enabled ?? true
+          source: 'Prompt'
+        }
+        {
+          name: 'selfharm'
+          allowedContentLevel: raiPolicy.completion.?selfharm.?allowedContentLevel
+          blocking: raiPolicy.completion.?selfharm.?blocking ?? true
+          enabled: raiPolicy.completion.?selfharm.?enabled ?? true
+          source: 'Completion'
+        }
+        {
+          name: 'jailbreak'
+          blocking: raiPolicy.prompt.?jailbreak.?blocking ?? true
+          enabled: raiPolicy.prompt.?jailbreak.?enabled ?? true
+          source: 'Prompt'
+        }
+        {
+          name: 'indirect_attack'
+          blocking: raiPolicy.prompt.?indirect_attack.?blocking ?? true
+          enabled: raiPolicy.prompt.?indirect_attack.?enabled ?? true
+          source: 'Prompt'
+        }
+        {
+          name: 'protected_material_text'
+          blocking: raiPolicy.completion.?protected_material_text.?blocking ?? true
+          enabled: raiPolicy.completion.?protected_material_text.?enabled ?? true
+          source: 'Completion'
+        }
+        {
+          name: 'protected_material_code'
+          blocking: raiPolicy.completion.?protected_material_code.?blocking ?? false
+          enabled: raiPolicy.completion.?protected_material_code.?enabled ?? true
+          source: 'Completion'
+        }
+      ]
+    }
+  }
+]
+
+@batchSize(1)
 resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = [
   for deployment in deployments: {
     parent: aiServices
@@ -86,11 +253,15 @@ resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01
     properties: {
       model: deployment.?model ?? null
       raiPolicyName: deployment.?raiPolicyName ?? null
+      versionUpgradeOption: deployment.?versionUpgradeOption ?? 'OnceCurrentVersionExpired'
     }
     sku: deployment.?sku ?? {
       name: 'Standard'
-      capacity: 20
+      capacity: 5
     }
+    dependsOn: [
+      raiPolicy
+    ]
   }
 ]
 

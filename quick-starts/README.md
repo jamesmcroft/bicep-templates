@@ -5,9 +5,9 @@ These quick start templates take advantage of the individual resource templates 
 > [!NOTE]
 > These quick start templates are a starting point. Modify them to fit your specific needs.
 
-## Azure AI Hub Environment
+## Azure AI Studio Hub Environment
 
-The [Azure AI Hub Environment](./ai-hub-environment.bicep) template deploys a complete AI solution that can be used to build, train, and deploy AI models, including Azure OpenAI. This deployment can be accessed via the [Azure AI Studio](https://ai.azure.com/build/).
+The [Azure AI Studio Hub Environment](./ai-hub-environment.bicep) template deploys a complete AI workspace that can be used to build, test, and deploy AI solutions with AI models from the Azure AI Studio. This deployment can be accessed via the [Azure AI Studio portal](https://ai.azure.com/build/).
 
 The template deploys the following resources:
 
@@ -25,6 +25,7 @@ The template deploys the following resources:
   - Used to store and manage AI model container images.
 - AI Services
   - Used to provide access to Azure OpenAI and other Azure AI Services from the AI Hub.
+  - Includes: GPT-4o Global Deployment (10K TPM), Phi-3 Mini 128K Instruct, and custom Responsible AI Content Filters.
 - AI Hub
   - Used to provide a unified experience for building, training, and deploying AI models.
 

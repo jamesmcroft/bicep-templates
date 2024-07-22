@@ -1,4 +1,5 @@
-import { modelDeploymentInfo } from '../ai_ml/ai-services.bicep'
+import { modelDeploymentInfo, raiPolicyInfo } from '../ai_ml/ai-services.bicep'
+import { serverlessModelInfo } from '../ai_ml/ai-hub-model-serverless-endpoint.bicep'
 
 targetScope = 'subscription'
 
@@ -17,12 +18,31 @@ param resourceGroupName string = ''
 @description('Tags for all resources.')
 param tags object = {}
 
+@description('Responsible AI policies for the Azure AI Services instance.')
+param raiPolicies raiPolicyInfo[] = [
+  {
+    name: workloadName
+    mode: 'Blocking'
+    prompt: {}
+    completion: {}
+  }
+]
+
 @description('Model deployments for the Azure AI Services instance.')
 param aiServiceModelDeployments modelDeploymentInfo[] = [
   {
     name: 'gpt-4o'
     model: { format: 'OpenAI', name: 'gpt-4o', version: '2024-05-13' }
-    sku: { name: 'Standard', capacity: 5 }
+    sku: { name: 'GlobalStandard', capacity: 10 }
+    raiPolicyName: workloadName
+    versionUpgradeOption: 'OnceCurrentVersionExpired'
+  }
+]
+
+@description('Serverless model deployments for the AI Hub project.')
+param serverlessModelDeployments serverlessModelInfo[] = [
+  {
+    name: 'Phi-3-mini-128k-instruct'
   }
 ]
 
@@ -215,9 +235,6 @@ resource cognitiveServicesOpenAIUser 'Microsoft.Authorization/roleDefinitions@20
   name: roles.ai.cognitiveServicesOpenAIUser
 }
 
-var completionsModelDeploymentName = 'gpt-4o'
-var embeddingModelDeploymentName = 'text-embedding-ada-002'
-
 module aiServices '../ai_ml/ai-services.bicep' = {
   name: '${abbrs.ai.aiServices}${resourceToken}'
   scope: resourceGroup
@@ -226,6 +243,7 @@ module aiServices '../ai_ml/ai-services.bicep' = {
     location: location
     tags: union(tags, {})
     identityId: managedIdentity.outputs.id
+    raiPolicies: raiPolicies
     deployments: aiServiceModelDeployments
     roleAssignments: [
       {
@@ -287,6 +305,17 @@ module aiHubProject '../ai_ml/ai-hub-project.bicep' = {
     location: location
     tags: union(tags, {})
     aiHubName: aiHub.outputs.name
+    serverlessModels: [
+      for serverlessModelDeployment in serverlessModelDeployments: {
+        name: '${serverlessModelDeployment.name}-${resourceToken}'
+        model: serverlessModelDeployment
+        keyVaultConfig: {
+          name: keyVault.outputs.name
+          primaryKeySecretName: '${serverlessModelDeployment.name}-${resourceToken}-Primary'
+          secondaryKeySecretName: '${serverlessModelDeployment.name}-${resourceToken}-Secondary'
+        }
+      }
+    ]
     roleAssignments: [
       {
         principalId: managedIdentity.outputs.principalId
@@ -349,8 +378,6 @@ output aiServicesInfo object = {
   name: aiServices.outputs.name
   endpoint: aiServices.outputs.endpoint
   host: aiServices.outputs.host
-  completionsModelDeploymentName: completionsModelDeploymentName
-  embeddingModelDeploymentName: embeddingModelDeploymentName
 }
 
 output aiHubInfo object = {
@@ -361,4 +388,5 @@ output aiHubInfo object = {
 output aiHubProjectInfo object = {
   id: aiHubProject.outputs.id
   name: aiHubProject.outputs.name
+  serverlessModelDeployments: aiHubProject.outputs.serverlessModelDeployments
 }
