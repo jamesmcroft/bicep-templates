@@ -16,7 +16,7 @@ type roleAssignmentInfo = {
   principalType: 'Device' | 'User' | 'Group' | 'ServicePrincipal' | 'ForeignGroup'
 }
 
-resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
+resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
   name: name
   location: location
   tags: tags

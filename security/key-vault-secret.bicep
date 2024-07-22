@@ -7,7 +7,7 @@ param keyVaultName string
 @secure()
 param value string
 
-resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' existing = {
   name: keyVaultName
 
   resource keyVaultSecret 'secrets' = {

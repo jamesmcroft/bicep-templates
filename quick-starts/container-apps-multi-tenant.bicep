@@ -25,7 +25,7 @@ var abbrs = loadJsonContent('../abbreviations.json')
 var roles = loadJsonContent('../roles.json')
 var resourceToken = toLower(uniqueString(subscription().id, workloadName, location))
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.managementGovernance.resourceGroup}${workloadName}'
   location: location
   tags: union(tags, {})
@@ -41,7 +41,7 @@ module managedIdentity '../security/managed-identity.bicep' = {
   }
 }
 
-resource keyVaultSecretsOfficer 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource keyVaultSecretsOfficer 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.security.keyVaultSecretsOfficer
 }
@@ -63,7 +63,7 @@ module keyVault '../security/key-vault.bicep' = {
   }
 }
 
-resource acrPull 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource acrPull 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.containers.acrPull
 }
@@ -110,7 +110,7 @@ module applicationInsights '../management_governance/application-insights.bicep'
   }
 }
 
-resource azureServiceBusDataOwner 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource azureServiceBusDataOwner 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.integration.azureServiceBusDataOwner
 }

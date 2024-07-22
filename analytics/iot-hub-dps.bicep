@@ -22,11 +22,11 @@ param sku skuInfo = {
 @description('Name for the IoT Hub associated with the DPS.')
 param iotHubName string
 
-resource iotHub 'Microsoft.Devices/IotHubs@2022-04-30-preview' existing = {
+resource iotHub 'Microsoft.Devices/IotHubs@2023-06-30-preview' existing = {
   name: iotHubName
 }
 
-resource iotHubDps 'Microsoft.Devices/provisioningServices@2022-02-05' = {
+resource iotHubDps 'Microsoft.Devices/provisioningServices@2023-03-01-preview' = {
   name: name
   location: location
   tags: tags

@@ -8,7 +8,7 @@ param tags object = {}
 @description('Name for the Log Analytics Workspace resource associated with the Application Insights instance.')
 param logAnalyticsWorkspaceName string
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
   name: logAnalyticsWorkspaceName
 }
 

@@ -19,7 +19,7 @@ var abbrs = loadJsonContent('../abbreviations.json')
 var roles = loadJsonContent('../roles.json')
 var resourceToken = toLower(uniqueString(subscription().id, workloadName, location))
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.managementGovernance.resourceGroup}${workloadName}'
   location: location
   tags: union(tags, {})
@@ -35,7 +35,7 @@ module managedIdentity '../security/managed-identity.bicep' = {
   }
 }
 
-resource storageBlobDataContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource storageBlobDataContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.storage.storageBlobDataContributor
 }
@@ -60,12 +60,12 @@ module storageAccount '../storage/storage-account.bicep' = {
   }
 }
 
-resource keyVaultContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource keyVaultContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.general.contributor
 }
 
-resource keyVaultAdministrator 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource keyVaultAdministrator 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.security.keyVaultAdministrator
 }
@@ -113,12 +113,12 @@ module applicationInsights '../management_governance/application-insights.bicep'
   }
 }
 
-resource acrPush 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource acrPush 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.containers.acrPush
 }
 
-resource acrPull 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource acrPull 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.containers.acrPull
 }

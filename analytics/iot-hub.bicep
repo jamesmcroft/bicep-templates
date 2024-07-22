@@ -49,7 +49,7 @@ param storageTelemetryConfig storageTelemetryConfigInfo = {
   fileNameFormat: '{iothub}/{partition}/{YYYY}-{MM}-{DD}/{HH}-{mm}'
 }
 
-resource iotHub 'Microsoft.Devices/IotHubs@2022-04-30-preview' = {
+resource iotHub 'Microsoft.Devices/IotHubs@2023-06-30-preview' = {
   name: name
   location: location
   tags: tags

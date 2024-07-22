@@ -4,7 +4,7 @@ param name string
 @description('Name for the Storage Account associated with the queue.')
 param storageAccountName string
 
-resource queue 'Microsoft.Storage/storageAccounts/queueServices/queues@2023-01-01' = {
+resource queue 'Microsoft.Storage/storageAccounts/queueServices/queues@2023-05-01' = {
   name: '${storageAccountName}/default/${name}'
   properties: {
     metadata: {}

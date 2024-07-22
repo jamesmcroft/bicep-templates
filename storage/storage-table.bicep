@@ -4,7 +4,7 @@ param name string
 @description('Name for the Storage Account associated with the table.')
 param storageAccountName string
 
-resource table 'Microsoft.Storage/storageAccounts/tableServices/tables@2022-09-01' = {
+resource table 'Microsoft.Storage/storageAccounts/tableServices/tables@2023-05-01' = {
   name: '${storageAccountName}/default/${name}'
 }
 

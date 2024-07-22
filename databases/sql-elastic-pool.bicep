@@ -46,11 +46,11 @@ param zoneRedundant bool = false
 ])
 param licenseType string = 'LicenseIncluded'
 
-resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' existing = {
+resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' existing = {
   name: sqlServerName
 }
 
-resource elasticPool 'Microsoft.Sql/servers/elasticPools@2022-05-01-preview' = {
+resource elasticPool 'Microsoft.Sql/servers/elasticPools@2023-08-01-preview' = {
   parent: sqlServer
   name: name
   location: location

@@ -41,7 +41,7 @@ param hostingMode string = 'default'
 @description('Role assignments to create for the AI Search instance.')
 param roleAssignments roleAssignmentInfo[] = []
 
-resource aiSearch 'Microsoft.Search/searchServices@2024-03-01-preview' = {
+resource aiSearch 'Microsoft.Search/searchServices@2024-06-01-preview' = {
   name: name
   location: location
   tags: tags

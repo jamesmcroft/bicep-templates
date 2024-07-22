@@ -8,7 +8,7 @@ param tags object = {}
 @description('Security rules of the network security group.')
 param securityRules object[] = []
 
-resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2022-01-01' = {
+resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
   name: name
   location: location
   tags: tags

@@ -33,11 +33,11 @@ param frontDoorName string
 @description('Endpoint information.')
 param endpoint endpointInfo
 
-resource frontDoor 'Microsoft.Cdn/profiles@2021-06-01' existing = {
+resource frontDoor 'Microsoft.Cdn/profiles@2024-05-01-preview' existing = {
   name: frontDoorName
 }
 
-resource frontDoorEndpoint 'Microsoft.Cdn/profiles/afdEndpoints@2021-06-01' = {
+resource frontDoorEndpoint 'Microsoft.Cdn/profiles/afdEndpoints@2024-05-01-preview' = {
   name: endpoint.name
   parent: frontDoor
   location: 'global'
@@ -45,7 +45,7 @@ resource frontDoorEndpoint 'Microsoft.Cdn/profiles/afdEndpoints@2021-06-01' = {
     enabledState: 'Enabled'
   }
 
-  resource frontDoorRoute 'routes@2021-06-01' = [
+  resource frontDoorRoute 'routes@2024-05-01-preview' = [
     for route in endpoint.routes: {
       name: route.name
       properties: {

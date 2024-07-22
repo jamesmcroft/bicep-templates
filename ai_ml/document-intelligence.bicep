@@ -22,7 +22,7 @@ param disableLocalAuth bool = true
 @description('Role assignments to create for the Document Intelligence instance.')
 param roleAssignments roleAssignmentInfo[] = []
 
-resource documentIntelligence 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = {
+resource documentIntelligence 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
   name: name
   location: location
   tags: tags

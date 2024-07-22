@@ -16,7 +16,7 @@ param identityId string
 @description('Public network access for the Web App. Defaults to Enabled.')
 param publicNetworkAccess string = 'Enabled'
 
-resource webApp 'Microsoft.Web/sites@2022-03-01' = {
+resource webApp 'Microsoft.Web/sites@2023-12-01' = {
   name: name
   location: location
   tags: tags

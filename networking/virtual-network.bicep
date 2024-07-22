@@ -8,7 +8,7 @@ param tags object = {}
 @description('List of address blocks reserved for this virtual network in CIDR notation.')
 param addressPrefixes string[] = ['10.0.0.0/16']
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-04-01' = {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: name
   location: location
   tags: tags

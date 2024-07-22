@@ -18,7 +18,7 @@ param disableLocalAuth bool = true
 @description('Role assignments to create for the Language resource.')
 param roleAssignments roleAssignmentInfo[] = []
 
-resource language 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = {
+resource language 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
   name: name
   location: location
   tags: tags

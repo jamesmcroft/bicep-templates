@@ -25,7 +25,7 @@ param disableLocalAuth bool = true
 @description('Role assignments to create for the Service Bus Namespace.')
 param roleAssignments roleAssignmentInfo[] = []
 
-resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2021-11-01' = {
+resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
   name: name
   location: location
   tags: tags

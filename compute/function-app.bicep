@@ -18,7 +18,7 @@ param publicNetworkAccess string = 'Enabled'
 @description('Always On setting for the Function App. Defaults to false.')
 param alwaysOn bool = false
 
-resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
+resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
   name: name
   location: location
   tags: tags

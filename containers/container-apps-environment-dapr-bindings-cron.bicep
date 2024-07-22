@@ -8,24 +8,24 @@ param schedule string
 @description('Container App names for the scopes to configure for the binding.')
 param scopes array = []
 
-resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01' existing = {
-    name: containerAppsEnvironmentName
+resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' existing = {
+  name: containerAppsEnvironmentName
 }
 
-resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2023-05-01' = {
-    name: name
-    parent: containerAppsEnvironment
-    properties: {
-        componentType: 'bindings.cron'
-        version: 'v1'
-        metadata: [
-            {
-                name: 'schedule'
-                value: schedule
-            }
-        ]
-        scopes: scopes
-    }
+resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2024-03-01' = {
+  name: name
+  parent: containerAppsEnvironment
+  properties: {
+    componentType: 'bindings.cron'
+    version: 'v1'
+    metadata: [
+      {
+        name: 'schedule'
+        value: schedule
+      }
+    ]
+    scopes: scopes
+  }
 }
 
 @description('The deployed Dapr component resource.')

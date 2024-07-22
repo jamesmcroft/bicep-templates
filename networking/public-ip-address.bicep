@@ -10,7 +10,7 @@ param skuName 'Basic' | 'Standard' = 'Standard'
 @description('Allocation method for the Public IP Address. Defaults to Static.')
 param allocationMethod 'Static' | 'Dynamic' = 'Static'
 
-resource publicIpAddress 'Microsoft.Network/publicIPAddresses@2022-07-01' = {
+resource publicIpAddress 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
   name: name
   location: location
   tags: tags

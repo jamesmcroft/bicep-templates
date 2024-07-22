@@ -19,7 +19,7 @@ param virtualNetworkName string
 @description('The list of A records to be created in the DNS zone.')
 param aRecords aRecordInfo[] = []
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2019-11-01' existing = {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-01-01' existing = {
   name: virtualNetworkName
 }
 

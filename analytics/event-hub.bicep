@@ -12,11 +12,11 @@ param partitionCount int = 1
 @description('Role assignments to create for the Event Hub resource.')
 param roleAssignments roleAssignmentInfo[] = []
 
-resource eventHubNamespace 'Microsoft.EventHub/namespaces@2023-01-01-preview' existing = {
+resource eventHubNamespace 'Microsoft.EventHub/namespaces@2024-05-01-preview' existing = {
   name: eventHubNamespaceName
 }
 
-resource eventHub 'Microsoft.EventHub/namespaces/eventhubs@2023-01-01-preview' = {
+resource eventHub 'Microsoft.EventHub/namespaces/eventhubs@2024-05-01-preview' = {
   name: name
   parent: eventHubNamespace
   properties: {

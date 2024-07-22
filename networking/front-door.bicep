@@ -22,7 +22,7 @@ param endpoints endpointTypes.endpointInfo[]
 @description('Origin groups for the Front Door resource.')
 param originGroups originGroupTypes.originGroupInfo[]
 
-resource frontDoor 'Microsoft.Cdn/profiles@2021-06-01' = {
+resource frontDoor 'Microsoft.Cdn/profiles@2024-05-01-preview' = {
   name: name
   location: 'global'
   tags: tags

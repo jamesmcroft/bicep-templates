@@ -30,7 +30,7 @@ param autoscaleConfig autoscaleConfigInfo = {
 
 var appGatewayId = resourceId('Microsoft.Network/applicationGateways', name)
 
-resource appGateway 'Microsoft.Network/applicationGateways@2022-07-01' = {
+resource appGateway 'Microsoft.Network/applicationGateways@2024-01-01' = {
   name: name
   location: location
   tags: tags

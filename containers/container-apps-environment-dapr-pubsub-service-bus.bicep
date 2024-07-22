@@ -27,15 +27,15 @@ param serviceBusConfig serviceBusConfigInfo = {
 @description('Container App names for the scopes to configure for the Dapr component.')
 param scopes array = []
 
-resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01' existing = {
+resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' existing = {
   name: containerAppsEnvironmentName
 }
 
-resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2021-11-01' existing = {
+resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' existing = {
   name: serviceBusNamespaceName
 }
 
-resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2023-05-01' = {
+resource daprComponent 'Microsoft.App/managedEnvironments/daprComponents@2024-03-01' = {
   name: name
   parent: containerAppsEnvironment
   properties: {

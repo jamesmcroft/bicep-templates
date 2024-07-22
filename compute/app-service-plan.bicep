@@ -26,7 +26,7 @@ param kind string = 'linux'
 @description('Whether a Linux App Service Plan. Defaults to true.')
 param reserved bool = true
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: name
   location: location
   tags: tags

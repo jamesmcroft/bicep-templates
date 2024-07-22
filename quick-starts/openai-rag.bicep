@@ -22,7 +22,7 @@ var abbrs = loadJsonContent('../abbreviations.json')
 var roles = loadJsonContent('../roles.json')
 var resourceToken = toLower(uniqueString(subscription().id, workloadName, location))
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.managementGovernance.resourceGroup}${workloadName}'
   location: location
   tags: union(tags, {})
@@ -38,7 +38,7 @@ module managedIdentity '../security/managed-identity.bicep' = {
   }
 }
 
-resource keyVaultAdministrator 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource keyVaultAdministrator 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.security.keyVaultAdministrator
 }
@@ -60,12 +60,12 @@ module keyVault '../security/key-vault.bicep' = {
   }
 }
 
-resource cognitiveServicesOpenAIContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource cognitiveServicesOpenAIContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.ai.cognitiveServicesOpenAIContributor
 }
 
-resource cognitiveServicesOpenAIUser 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource cognitiveServicesOpenAIUser 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.ai.cognitiveServicesOpenAIUser
 }
@@ -121,7 +121,7 @@ module openAI '../ai_ml/openai.bicep' = {
   }
 }
 
-resource storageBlobDataContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource storageBlobDataContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.storage.storageBlobDataContributor
 }

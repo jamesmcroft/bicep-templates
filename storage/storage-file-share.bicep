@@ -14,11 +14,11 @@ param fileServiceName string
 ])
 param accessTier string = 'Hot'
 
-resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2022-09-01' existing = {
+resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' existing = {
   name: '${storageAccountName}/${fileServiceName}'
 }
 
-resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2022-09-01' = {
+resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-05-01' = {
   name: name
   parent: fileService
   properties: {

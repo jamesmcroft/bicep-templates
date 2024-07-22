@@ -30,7 +30,7 @@ param workspaceName string
 @description('Connection information.')
 param connection connectionInfo
 
-resource workspace 'Microsoft.MachineLearningServices/workspaces@2023-10-01' existing = {
+resource workspace 'Microsoft.MachineLearningServices/workspaces@2024-04-01-preview' existing = {
   name: workspaceName
 
   resource workspaceConnection 'connections@2024-01-01-preview' = {

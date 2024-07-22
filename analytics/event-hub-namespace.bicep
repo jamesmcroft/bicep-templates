@@ -36,7 +36,7 @@ param disableLocalAuth bool = true
 @description('Role assignments to create for the Document Intelligence instance.')
 param roleAssignments roleAssignmentInfo[] = []
 
-resource eventHubNamespace 'Microsoft.EventHub/namespaces@2023-01-01-preview' = {
+resource eventHubNamespace 'Microsoft.EventHub/namespaces@2024-05-01-preview' = {
   name: name
   location: location
   tags: tags

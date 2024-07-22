@@ -7,10 +7,10 @@ param displayName string
 @description('Value of the named value.')
 param value string
 
-resource apiManagement 'Microsoft.ApiManagement/service@2023-05-01-preview' existing = {
+resource apiManagement 'Microsoft.ApiManagement/service@2023-09-01-preview' existing = {
   name: apiManagementName
 
-  resource namedValue 'namedValues@2023-05-01-preview' = {
+  resource namedValue 'namedValues@2023-09-01-preview' = {
     name: name
     properties: {
       displayName: displayName

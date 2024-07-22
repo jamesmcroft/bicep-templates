@@ -37,11 +37,11 @@ param sku skuInfo = {
 @description('ID for the SQL Elastic Pool associated with the SQL Database.')
 param sqlServerElasticPoolId string = ''
 
-resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' existing = {
+resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' existing = {
   name: sqlServerName
 }
 
-resource sqlDatabase 'Microsoft.Sql/servers/databases@2022-05-01-preview' = {
+resource sqlDatabase 'Microsoft.Sql/servers/databases@2023-08-01-preview' = {
   parent: sqlServer
   name: name
   location: location

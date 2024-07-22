@@ -13,23 +13,23 @@ param adminPassword string
 @description('Whether to allow Azure IPs to access the SQL server resource. Defaults to true.')
 param allowAzureIps bool = true
 
-resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
-    name: name
-    location: location
-    tags: tags
-    properties: {
-        administratorLogin: adminUsername
-        administratorLoginPassword: adminPassword
-    }
+resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
+  name: name
+  location: location
+  tags: tags
+  properties: {
+    administratorLogin: adminUsername
+    administratorLoginPassword: adminPassword
+  }
 }
 
-resource sqlServerAzureFirewallRules 'Microsoft.Sql/servers/firewallRules@2022-05-01-preview' = if (allowAzureIps) {
-    parent: sqlServer
-    name: 'AllowAllWindowsAzureIps'
-    properties: {
-        startIpAddress: '0.0.0.0'
-        endIpAddress: '0.0.0.0'
-    }
+resource sqlServerAzureFirewallRules 'Microsoft.Sql/servers/firewallRules@2023-08-01-preview' = if (allowAzureIps) {
+  parent: sqlServer
+  name: 'AllowAllWindowsAzureIps'
+  properties: {
+    startIpAddress: '0.0.0.0'
+    endIpAddress: '0.0.0.0'
+  }
 }
 
 @description('The deployed SQL Server resource.')

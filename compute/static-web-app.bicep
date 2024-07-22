@@ -17,7 +17,7 @@ param sku skuInfo = {
   name: 'Free'
 }
 
-resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' = {
+resource staticWebApp 'Microsoft.Web/staticSites@2023-12-01' = {
   name: name
   location: location
   tags: tags

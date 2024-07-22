@@ -4,11 +4,11 @@ param name string = 'default'
 @description('Name for the Storage Account associated with the file service.')
 param storageAccountName string
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: storageAccountName
 }
 
-resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2022-09-01' = {
+resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' = {
   name: name
   parent: storageAccount
 }

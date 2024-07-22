@@ -59,11 +59,11 @@ param frontDoorName string
 @description('Origin group information.')
 param originGroup originGroupInfo
 
-resource frontDoor 'Microsoft.Cdn/profiles@2021-06-01' existing = {
+resource frontDoor 'Microsoft.Cdn/profiles@2024-05-01-preview' existing = {
   name: frontDoorName
 }
 
-resource frontDoorOriginGroup 'Microsoft.Cdn/profiles/originGroups@2021-06-01' = {
+resource frontDoorOriginGroup 'Microsoft.Cdn/profiles/originGroups@2024-05-01-preview' = {
   name: originGroup.name
   parent: frontDoor
   properties: {
@@ -71,7 +71,7 @@ resource frontDoorOriginGroup 'Microsoft.Cdn/profiles/originGroups@2021-06-01' =
     loadBalancingSettings: originGroup.loadBalancingSettings
   }
 
-  resource frontDoorOrigin 'origins@2021-06-01' = [
+  resource frontDoorOrigin 'origins@2024-05-01-preview' = [
     for origin in originGroup.origins: {
       name: origin.name
       properties: {

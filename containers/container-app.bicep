@@ -117,7 +117,7 @@ param daprEnabled bool = false
 @description('Name for the Dapr App ID. Required if Dapr is enabled. Defaults to empty.')
 param daprAppId string = ''
 
-resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
+resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: name
   location: location
   tags: tags

@@ -46,7 +46,7 @@ var abbrs = loadJsonContent('../abbreviations.json')
 var roles = loadJsonContent('../roles.json')
 var resourceToken = toLower(uniqueString(subscription().id, workloadName, location))
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.managementGovernance.resourceGroup}${workloadName}'
   location: location
   tags: union(tags, {})
@@ -62,7 +62,7 @@ module managedIdentity '../security/managed-identity.bicep' = {
   }
 }
 
-resource keyVaultSecretsOfficer 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource keyVaultSecretsOfficer 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.security.keyVaultSecretsOfficer
 }
@@ -120,22 +120,22 @@ module applicationInsights '../management_governance/application-insights.bicep'
 // Required RBAC roles for Azure Functions to access the storage account
 // https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob&pivots=programming-language-csharp#connecting-to-host-storage-with-an-identity
 
-resource storageAccountContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource storageAccountContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.storage.storageAccountContributor
 }
 
-resource storageBlobDataOwner 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource storageBlobDataOwner 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.storage.storageBlobDataOwner
 }
 
-resource storageQueueDataContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource storageQueueDataContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.storage.storageQueueDataContributor
 }
 
-resource storageTableDataContributor 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource storageTableDataContributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   scope: resourceGroup
   name: roles.storage.storageTableDataContributor
 }

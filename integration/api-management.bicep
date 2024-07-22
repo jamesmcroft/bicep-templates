@@ -46,7 +46,7 @@ param certificates object[] = []
 @description('Hostname configurations for the API Management resource.')
 param hostnameConfigurations object[] = []
 
-resource apiManagement 'Microsoft.ApiManagement/service@2023-03-01-preview' = {
+resource apiManagement 'Microsoft.ApiManagement/service@2023-09-01-preview' = {
   name: name
   location: location
   tags: tags
