@@ -287,8 +287,6 @@ resource aiServicesDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@202
   }
 }
 
-@description('The deployed AI Services resource.')
-output resource resource = aiServices
 @description('ID for the deployed AI Services resource.')
 output id string = aiServices.id
 @description('Name for the deployed AI Services resource.')
@@ -297,5 +295,9 @@ output name string = aiServices.name
 output endpoint string = aiServices.properties.endpoint
 @description('Host for the deployed AI Services resource.')
 output host string = split(aiServices.properties.endpoint, '/')[2]
+@description('Endpoint for the Azure OpenAI API.')
+output openAIEndpoint string = aiServices.properties.endpoints['OpenAI Language Model Instance API']
+@description('Host for the Azure OpenAI API.')
+output openAIHost string = split(aiServices.properties.endpoints['OpenAI Language Model Instance API'], '/')[2]
 @description('Principal ID for the deployed AI Services resource.')
 output principalId string = identityId == null ? aiServices.identity.principalId : identityId!
