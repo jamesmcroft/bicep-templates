@@ -20,7 +20,7 @@ type keyVaultConfigInfo = {
 @description('Serverless model information for serverless endpoint deployments.')
 type serverlessModelInfo = {
   @description('Name of the model. The model ID will be determined by the template.')
-  name: 'Phi-3-mini-128k-instruct' | null
+  name: string?
   @description('Model ID. Optional override if the expected model name is not supported. Value may start with azureml://.')
   id: string?
 }
