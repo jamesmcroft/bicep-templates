@@ -162,56 +162,56 @@ resource raiPolicy 'Microsoft.CognitiveServices/accounts/raiPolicies@2024-04-01-
       contentFilters: [
         {
           name: 'violence'
-          allowedContentLevel: raiPolicy.prompt.?violence.?allowedContentLevel
+          allowedContentLevel: raiPolicy.prompt.?violence.?allowedContentLevel ?? 'High'
           blocking: raiPolicy.prompt.?violence.?blocking ?? true
           enabled: raiPolicy.prompt.?violence.?enabled ?? true
           source: 'Prompt'
         }
         {
           name: 'violence'
-          allowedContentLevel: raiPolicy.completion.?violence.?allowedContentLevel
+          allowedContentLevel: raiPolicy.completion.?violence.?allowedContentLevel ?? 'High'
           blocking: raiPolicy.completion.?violence.?blocking ?? true
           enabled: raiPolicy.completion.?violence.?enabled ?? true
           source: 'Completion'
         }
         {
           name: 'hate'
-          allowedContentLevel: raiPolicy.prompt.?hate.?allowedContentLevel
+          allowedContentLevel: raiPolicy.prompt.?hate.?allowedContentLevel ?? 'High'
           blocking: raiPolicy.prompt.?hate.?blocking ?? true
           enabled: raiPolicy.prompt.?hate.?enabled ?? true
           source: 'Prompt'
         }
         {
           name: 'hate'
-          allowedContentLevel: raiPolicy.completion.?hate.?allowedContentLevel
+          allowedContentLevel: raiPolicy.completion.?hate.?allowedContentLevel ?? 'High'
           blocking: raiPolicy.completion.?hate.?blocking ?? true
           enabled: raiPolicy.completion.?hate.?enabled ?? true
           source: 'Completion'
         }
         {
           name: 'sexual'
-          allowedContentLevel: raiPolicy.prompt.?sexual.?allowedContentLevel
+          allowedContentLevel: raiPolicy.prompt.?sexual.?allowedContentLevel ?? 'High'
           blocking: raiPolicy.prompt.?sexual.?blocking ?? true
           enabled: raiPolicy.prompt.?sexual.?enabled ?? true
           source: 'Prompt'
         }
         {
           name: 'sexual'
-          allowedContentLevel: raiPolicy.completion.?sexual.?allowedContentLevel
+          allowedContentLevel: raiPolicy.completion.?sexual.?allowedContentLevel ?? 'High'
           blocking: raiPolicy.completion.?sexual.?blocking ?? true
           enabled: raiPolicy.completion.?sexual.?enabled ?? true
           source: 'Completion'
         }
         {
           name: 'selfharm'
-          allowedContentLevel: raiPolicy.prompt.?selfharm.?allowedContentLevel
+          allowedContentLevel: raiPolicy.prompt.?selfharm.?allowedContentLevel ?? 'High'
           blocking: raiPolicy.prompt.?selfharm.?blocking ?? true
           enabled: raiPolicy.prompt.?selfharm.?enabled ?? true
           source: 'Prompt'
         }
         {
           name: 'selfharm'
-          allowedContentLevel: raiPolicy.completion.?selfharm.?allowedContentLevel
+          allowedContentLevel: raiPolicy.completion.?selfharm.?allowedContentLevel ?? 'High'
           blocking: raiPolicy.completion.?selfharm.?blocking ?? true
           enabled: raiPolicy.completion.?selfharm.?enabled ?? true
           source: 'Completion'
@@ -224,8 +224,8 @@ resource raiPolicy 'Microsoft.CognitiveServices/accounts/raiPolicies@2024-04-01-
         }
         {
           name: 'indirect_attack'
-          blocking: raiPolicy.prompt.?indirect_attack.?blocking ?? true
-          enabled: raiPolicy.prompt.?indirect_attack.?enabled ?? true
+          blocking: raiPolicy.prompt.?indirect_attack.?blocking ?? false
+          enabled: raiPolicy.prompt.?indirect_attack.?enabled ?? false
           source: 'Prompt'
         }
         {
