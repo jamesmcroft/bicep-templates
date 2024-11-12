@@ -81,7 +81,7 @@ The templates in this repository are designed to be easy to use and understand. 
 ### Management and Governance
 
 - [**Azure Log Analytics Workspace**](./management_governance/log-analytics-workspace.bicep)
-  - Deploys an [Azure Log Analytics Workspace](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-overview), which can be used to collect, analyze, and visualize log data.
+  - Deploys an [Azure Log Analytics Workspace](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-overview), which can be used to collect, analyze, and visualize log data. Provides support for [Summary Rules](./management_governance/log-analytics-workspace-summary-log.bicep) which can be deployed to aggregate large volumes of log data into meaningful summary tables.
 - [**Azure Application Insights**](./management_governance/application-insights.bicep)
   - Deploys an [Azure Application Insights](https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview), which can be used to monitor and analyze the performance of applications that can be linked to a Log Analytics Workspace.
 
