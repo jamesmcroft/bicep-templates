@@ -20,8 +20,10 @@ The templates in this repository are designed to be easy to use and understand. 
 
 ### AI/ML
 
-- [**Azure AI Hub**](./ai_ml/ai-hub.bicep)
-  - Deploys an [Azure AI Hub](https://learn.microsoft.com/en-us/azure/ai-studio/concepts/ai-resources), a variant of Azure Machine Learning, that can be used by the [Azure AI Studio](https://ai.azure.com/build) for deploying and using AI models, including Azure OpenAI GPT models.
+- [**Azure AI Foundry Hub**](./ai_ml/ai-hub.bicep)
+  - Deploys an [Azure AI Foundry Hub](https://learn.microsoft.com/en-us/azure/ai-studio/concepts/ai-resources) that provides a centralized area for teams to govern their AI projects, accessed via the [Azure AI Foundry](https://ai.azure.com/build). Provides support for [Azure AI Foundry Project](./ai_ml/ai-hub-project.bicep) resources which can be used to manage the scope of individual AI projects, including the deployment of AI models, including GPT models.
+- [**Azure AI Foundry Serverless Model Endpoints**](./ai_ml/ai-hub-model-serverless-endpoint.bicep)
+  - Deploys an [Azure AI Foundry Serverless Model Endpoint](https://learn.microsoft.com/en-us/azure/ai-studio/how-to/deploy-models-serverless?tabs=azure-ai-studio) that can host supported models from the Foundry model catalog. See the [models.json](./ai_ml/models.json) for a list of out-of-the-box models that can be deployed from this repository.
 - [**Azure AI Search**](./ai_ml/ai-search.bicep)
   - Deploys an [Azure AI Search service](https://learn.microsoft.com/en-us/azure/search/search-what-is-azure-search), which can be used to index and search over structured and unstructured data, including embeddings for semantic search.
 - [**Azure AI Services**](./ai_ml/ai-services.bicep)

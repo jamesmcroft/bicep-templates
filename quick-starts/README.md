@@ -5,9 +5,9 @@ These quick start templates take advantage of the individual resource templates 
 > [!NOTE]
 > These quick start templates are a starting point. Modify them to fit your specific needs.
 
-## Azure AI Studio Hub Environment
+## Azure AI Foundry Hub Environment
 
-The [Azure AI Studio Hub Environment](./ai-hub-environment.bicep) template deploys a complete AI workspace that can be used to build, test, and deploy AI solutions with AI models from the Azure AI Studio. This deployment can be accessed via the [Azure AI Studio portal](https://ai.azure.com/build/).
+The [Azure AI Foundry Hub Environment](./ai-hub-environment.bicep) template deploys a complete AI workspace that can be used to build, test, and deploy AI solutions with AI models from the Azure AI Foundry. This deployment can be accessed via the [Azure AI Foundry portal](https://ai.azure.com/build/).
 
 The template deploys the following resources:
 
