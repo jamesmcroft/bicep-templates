@@ -1,5 +1,5 @@
-import { modelDeploymentInfo, raiPolicyInfo } from '../ai_ml/ai-services.bicep'
-import { serverlessModelInfo } from '../ai_ml/ai-hub-model-serverless-endpoint.bicep'
+import { modelDeploymentInfo, raiPolicyInfo } from '../../ai_ml/ai-services.bicep'
+import { serverlessModelInfo } from '../../ai_ml/ai-hub-model-serverless-endpoint.bicep'
 
 targetScope = 'subscription'
 
@@ -32,7 +32,7 @@ param raiPolicies raiPolicyInfo[] = [
 param aiServiceModelDeployments modelDeploymentInfo[] = [
   {
     name: 'gpt-4o'
-    model: { format: 'OpenAI', name: 'gpt-4o', version: '2024-05-13' }
+    model: { format: 'OpenAI', name: 'gpt-4o', version: '2024-11-20' }
     sku: { name: 'GlobalStandard', capacity: 10 }
     raiPolicyName: workloadName
     versionUpgradeOption: 'OnceCurrentVersionExpired'
@@ -46,8 +46,8 @@ param serverlessModelDeployments serverlessModelInfo[] = [
   }
 ]
 
-var abbrs = loadJsonContent('../abbreviations.json')
-var roles = loadJsonContent('../roles.json')
+var abbrs = loadJsonContent('../../abbreviations.json')
+var roles = loadJsonContent('../../roles.json')
 var resourceToken = toLower(uniqueString(subscription().id, workloadName, location))
 
 resource contributor 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
@@ -61,7 +61,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   tags: union(tags, {})
 }
 
-module managedIdentity '../security/managed-identity.bicep' = {
+module managedIdentity '../../security/managed-identity.bicep' = {
   name: '${abbrs.security.managedIdentity}${resourceToken}'
   scope: resourceGroup
   params: {
@@ -71,7 +71,7 @@ module managedIdentity '../security/managed-identity.bicep' = {
   }
 }
 
-module resouceGroupRoleAssignment '../security/resource-group-role-assignment.bicep' = {
+module resourceGroupRoleAssignment '../../security/resource-group-role-assignment.bicep' = {
   name: '${resourceGroup.name}-role-assignment'
   scope: resourceGroup
   params: {
@@ -106,7 +106,7 @@ resource storageTableDataContributor 'Microsoft.Authorization/roleDefinitions@20
   name: roles.storage.storageTableDataContributor
 }
 
-module storageAccount '../storage/storage-account.bicep' = {
+module storageAccount '../../storage/storage-account.bicep' = {
   name: '${abbrs.storage.storageAccount}${resourceToken}'
   scope: resourceGroup
   params: {
@@ -146,7 +146,7 @@ resource keyVaultAdministrator 'Microsoft.Authorization/roleDefinitions@2022-05-
   name: roles.security.keyVaultAdministrator
 }
 
-module keyVault '../security/key-vault.bicep' = {
+module keyVault '../../security/key-vault.bicep' = {
   name: '${abbrs.security.keyVault}${resourceToken}'
   scope: resourceGroup
   params: {
@@ -163,7 +163,7 @@ module keyVault '../security/key-vault.bicep' = {
   }
 }
 
-module logAnalyticsWorkspace '../management_governance/log-analytics-workspace.bicep' = {
+module logAnalyticsWorkspace '../../management_governance/log-analytics-workspace.bicep' = {
   name: '${abbrs.managementGovernance.logAnalyticsWorkspace}${resourceToken}'
   scope: resourceGroup
   params: {
@@ -173,7 +173,7 @@ module logAnalyticsWorkspace '../management_governance/log-analytics-workspace.b
   }
 }
 
-module applicationInsights '../management_governance/application-insights.bicep' = {
+module applicationInsights '../../management_governance/application-insights.bicep' = {
   name: '${abbrs.managementGovernance.applicationInsights}${resourceToken}'
   scope: resourceGroup
   params: {
@@ -194,7 +194,7 @@ resource acrPull 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' ex
   name: roles.containers.acrPull
 }
 
-module containerRegistry '../containers/container-registry.bicep' = {
+module containerRegistry '../../containers/container-registry.bicep' = {
   name: '${abbrs.containers.containerRegistry}${resourceToken}'
   scope: resourceGroup
   params: {
@@ -235,7 +235,7 @@ resource cognitiveServicesOpenAIUser 'Microsoft.Authorization/roleDefinitions@20
   name: roles.ai.cognitiveServicesOpenAIUser
 }
 
-module aiServices '../ai_ml/ai-services.bicep' = {
+module aiServices '../../ai_ml/ai-services.bicep' = {
   name: '${abbrs.ai.aiServices}${resourceToken}'
   scope: resourceGroup
   params: {
@@ -270,7 +270,7 @@ resource azureMLDataScientist 'Microsoft.Authorization/roleDefinitions@2022-05-0
   name: roles.ai.azureMLDataScientist
 }
 
-module aiHub '../ai_ml/ai-hub.bicep' = {
+module aiHub '../../ai_ml/ai-hub.bicep' = {
   name: '${abbrs.ai.aiHub}${resourceToken}'
   scope: resourceGroup
   params: {
@@ -295,7 +295,7 @@ module aiHub '../ai_ml/ai-hub.bicep' = {
   }
 }
 
-module aiHubProject '../ai_ml/ai-hub-project.bicep' = {
+module aiHubProject '../../ai_ml/ai-hub-project.bicep' = {
   name: '${abbrs.ai.aiHubProject}${resourceToken}'
   scope: resourceGroup
   params: {
