@@ -5,30 +5,6 @@ These quick start templates take advantage of the individual resource templates 
 > [!NOTE]
 > These quick start templates are a starting point. Modify them to fit your specific needs.
 
-## Azure AI Foundry Hub Environment
-
-The [Azure AI Foundry Hub Environment](./ai-hub-environment.bicep) template deploys a complete AI workspace that can be used to build, test, and deploy AI solutions with AI models from the Azure AI Foundry. This deployment can be accessed via the [Azure AI Foundry portal](https://ai.azure.com/build/).
-
-The template deploys the following resources:
-
-- Resource Group
-  - Used to contain all the deployed resources.
-- Managed Identity
-  - Used to provide secure, role-based access control to the deployed resources from the AI Hub.
-- Storage Account
-  - Used for grounding data for the AI Services.
-- Key Vault
-  - Used to store secrets and keys for the deployed resources.
-- Log Analytics + Application Insights
-  - Used to monitor and analyze the deployed resources.
-- Container Registry
-  - Used to store and manage AI model container images.
-- AI Services
-  - Used to provide access to Azure OpenAI and other Azure AI Services from the AI Hub.
-  - Includes: GPT-4o Global Deployment (10K TPM), Phi-3 Mini 128K Instruct, and custom Responsible AI Content Filters.
-- AI Hub
-  - Used to provide a unified experience for building, training, and deploying AI models.
-
 ## Microservices Architecture with Azure Container Apps
 
 The [Microservices Architecture with Azure Container Apps](./container-apps-multi-tenant.bicep) template deploys the infrastructure for a microservices architecture using Azure Container Apps.
