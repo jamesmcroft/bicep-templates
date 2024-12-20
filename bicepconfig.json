@@ -1,12 +1,13 @@
 {
   "analyzers": {
     "core": {
+      "enabled": true,
       "rules": {
         "no-unused-params": {
           "level": "warning"
         },
         "use-resource-id-functions": {
-          "level": "info"
+          "level": "off"
         }
       }
     }
