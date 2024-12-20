@@ -39,7 +39,7 @@ param keyVaultId string
 @description('ID for the Application Insights associated with the AI Hub.')
 param applicationInsightsId string
 @description('ID for the Container Registry associated with the AI Hub.')
-param containerRegistryId string
+param containerRegistryId string?
 @description('ID for the Managed Identity associated with the AI Hub. Defaults to the system-assigned identity.')
 param identityId string?
 @description('Name for the AI Services resource to connect to.')
@@ -144,6 +144,10 @@ output id string = aiHub.id
 output name string = aiHub.name
 @description('Identity principal ID for the deployed AI Hub resource.')
 output identityPrincipalId string? = identityId == null ? aiHub.identity.principalId : identityId
+@description('AI Services connection name for the deployed AI Hub resource.')
+output aiServicesConnectionName string = aiHub::aiServicesConnection.name
+@description('OpenAI specific connection name for the deployed AI Hub resource.')
+output openAIServicesConnectionName string = '${aiHub::aiServicesConnection.name}_aoai'
 @description('Serverless model deployments for the AI Hub.')
 output serverlessModelDeployments serverlessModelDeploymentOutputInfo[] = [
   for (item, index) in serverlessModels: {
