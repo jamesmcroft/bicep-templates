@@ -57,16 +57,6 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   tags: union(tags, {})
 }
 
-module managedIdentity '../../security/managed-identity.bicep' = {
-  name: '${abbrs.security.managedIdentity}${resourceToken}'
-  scope: resourceGroup
-  params: {
-    name: '${abbrs.security.managedIdentity}${resourceToken}'
-    location: location
-    tags: union(tags, {})
-  }
-}
-
 var contributorIdentityAssignments = [
   for identity in identities: {
     principalId: identity.principalId
@@ -79,117 +69,7 @@ module resourceGroupRoleAssignment '../../security/resource-group-role-assignmen
   name: '${resourceGroup.name}-role-assignment'
   scope: resourceGroup
   params: {
-    roleAssignments: concat(contributorIdentityAssignments, [
-      {
-        principalId: managedIdentity.outputs.principalId
-        roleDefinitionId: contributorRole.id
-        principalType: 'ServicePrincipal'
-      }
-    ])
-  }
-}
-
-// Storage account roles required for using Prompt Flow in AI Hubs
-resource storageAccountContributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
-  name: roles.storage.storageAccountContributor
-}
-
-resource storageBlobDataContributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
-  name: roles.storage.storageBlobDataContributor
-}
-
-resource storageFileDataPrivilegedContributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
-  name: roles.storage.storageFileDataPrivilegedContributor
-}
-
-resource storageTableDataContributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  scope: resourceGroup
-  name: roles.storage.storageTableDataContributor
-}
-
-var storageAccountContributorIdentityAssignments = [
-  for identity in identities: {
-    principalId: identity.principalId
-    roleDefinitionId: storageAccountContributorRole.id
-    principalType: identity.principalType
-  }
-]
-
-var storageBlobDataContributorIdentityAssignments = [
-  for identity in identities: {
-    principalId: identity.principalId
-    roleDefinitionId: storageBlobDataContributorRole.id
-    principalType: identity.principalType
-  }
-]
-
-var storageFileDataPrivilegedContributorIdentityAssignments = [
-  for identity in identities: {
-    principalId: identity.principalId
-    roleDefinitionId: storageFileDataPrivilegedContributorRole.id
-    principalType: identity.principalType
-  }
-]
-
-var storageTableDataContributorIdentityAssignments = [
-  for identity in identities: {
-    principalId: identity.principalId
-    roleDefinitionId: storageTableDataContributorRole.id
-    principalType: identity.principalType
-  }
-]
-
-module storageAccount '../../storage/storage-account.bicep' = {
-  name: '${abbrs.storage.storageAccount}${resourceToken}'
-  scope: resourceGroup
-  params: {
-    name: '${abbrs.storage.storageAccount}${resourceToken}'
-    location: location
-    tags: union(tags, {})
-    sku: {
-      name: 'Standard_LRS'
-    }
-    roleAssignments: concat(
-      storageAccountContributorIdentityAssignments,
-      storageBlobDataContributorIdentityAssignments,
-      storageFileDataPrivilegedContributorIdentityAssignments,
-      storageTableDataContributorIdentityAssignments,
-      [
-        {
-          principalId: managedIdentity.outputs.principalId
-          roleDefinitionId: storageAccountContributorRole.id
-          principalType: 'ServicePrincipal'
-        }
-        {
-          principalId: managedIdentity.outputs.principalId
-          roleDefinitionId: storageBlobDataContributorRole.id
-          principalType: 'ServicePrincipal'
-        }
-        {
-          principalId: managedIdentity.outputs.principalId
-          roleDefinitionId: storageFileDataPrivilegedContributorRole.id
-          principalType: 'ServicePrincipal'
-        }
-        {
-          principalId: managedIdentity.outputs.principalId
-          roleDefinitionId: storageTableDataContributorRole.id
-          principalType: 'ServicePrincipal'
-        }
-      ]
-    )
-  }
-}
-
-var contentUnderstandingContainerName = toLower(uniqueString(resourceToken, 'content-understanding'))
-module contentUnderstandingContainer '../../storage/storage-blob-container.bicep' = {
-  name: contentUnderstandingContainerName
-  scope: resourceGroup
-  params: {
-    name: contentUnderstandingContainerName
-    storageAccountName: storageAccount.outputs.name
+    roleAssignments: concat(contributorIdentityAssignments, [])
   }
 }
 
@@ -213,13 +93,7 @@ module keyVault '../../security/key-vault.bicep' = {
     name: '${abbrs.security.keyVault}${resourceToken}'
     location: location
     tags: union(tags, {})
-    roleAssignments: concat(keyVaultContributorIdentityAssignments, [
-      {
-        principalId: managedIdentity.outputs.principalId
-        roleDefinitionId: keyVaultContributorRole.id
-        principalType: 'ServicePrincipal'
-      }
-    ])
+    roleAssignments: concat(keyVaultContributorIdentityAssignments, [])
   }
 }
 
@@ -303,7 +177,6 @@ module aiServices '../../ai_ml/ai-services.bicep' = {
     name: '${abbrs.ai.aiServices}${resourceToken}'
     location: location
     tags: union(tags, {})
-    identityId: managedIdentity.outputs.id
     raiPolicies: raiPolicies
     deployments: aiServiceModelDeployments
     roleAssignments: concat(
@@ -311,29 +184,113 @@ module aiServices '../../ai_ml/ai-services.bicep' = {
       cognitiveServicesContributorRoleAssignments,
       cognitiveServicesOpenAIUserRoleAssignments,
       cognitiveServicesOpenAIContributorRoleAssignments,
+      []
+    )
+  }
+}
+
+// Require self-referencing role assignment for AI Services identity to access Azure OpenAI.
+module aiServicesRoleAssignment '../../security/resource-role-assignment.json' = {
+  name: '${abbrs.ai.aiServices}${resourceToken}-role-assignment'
+  scope: resourceGroup
+  params: {
+    resourceId: aiServices.outputs.id
+    roleAssignments: [
+      {
+        principalId: aiServices.outputs.principalId
+        roleDefinitionId: cognitiveServicesUserRole.id
+        principalType: 'ServicePrincipal'
+      }
+    ]
+  }
+}
+
+// Storage account roles required for using Prompt Flow in AI Hubs
+resource storageAccountContributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  scope: resourceGroup
+  name: roles.storage.storageAccountContributor
+}
+
+resource storageBlobDataContributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  scope: resourceGroup
+  name: roles.storage.storageBlobDataContributor
+}
+
+resource storageFileDataPrivilegedContributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  scope: resourceGroup
+  name: roles.storage.storageFileDataPrivilegedContributor
+}
+
+resource storageTableDataContributorRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  scope: resourceGroup
+  name: roles.storage.storageTableDataContributor
+}
+
+var storageAccountContributorIdentityAssignments = [
+  for identity in identities: {
+    principalId: identity.principalId
+    roleDefinitionId: storageAccountContributorRole.id
+    principalType: identity.principalType
+  }
+]
+
+var storageBlobDataContributorIdentityAssignments = [
+  for identity in identities: {
+    principalId: identity.principalId
+    roleDefinitionId: storageBlobDataContributorRole.id
+    principalType: identity.principalType
+  }
+]
+
+var storageFileDataPrivilegedContributorIdentityAssignments = [
+  for identity in identities: {
+    principalId: identity.principalId
+    roleDefinitionId: storageFileDataPrivilegedContributorRole.id
+    principalType: identity.principalType
+  }
+]
+
+var storageTableDataContributorIdentityAssignments = [
+  for identity in identities: {
+    principalId: identity.principalId
+    roleDefinitionId: storageTableDataContributorRole.id
+    principalType: identity.principalType
+  }
+]
+
+module storageAccount '../../storage/storage-account.bicep' = {
+  name: '${abbrs.storage.storageAccount}${resourceToken}'
+  scope: resourceGroup
+  params: {
+    name: '${abbrs.storage.storageAccount}${resourceToken}'
+    location: location
+    tags: union(tags, {})
+    sku: {
+      name: 'Standard_LRS'
+    }
+    roleAssignments: concat(
+      storageAccountContributorIdentityAssignments,
+      storageBlobDataContributorIdentityAssignments,
+      storageFileDataPrivilegedContributorIdentityAssignments,
+      storageTableDataContributorIdentityAssignments,
       [
         {
-          principalId: managedIdentity.outputs.principalId
-          roleDefinitionId: cognitiveServicesUserRole.id
-          principalType: 'ServicePrincipal'
-        }
-        {
-          principalId: managedIdentity.outputs.principalId
-          roleDefinitionId: cognitiveServicesContributorRole.id
-          principalType: 'ServicePrincipal'
-        }
-        {
-          principalId: managedIdentity.outputs.principalId
-          roleDefinitionId: cognitiveServicesOpenAIUserRole.id
-          principalType: 'ServicePrincipal'
-        }
-        {
-          principalId: managedIdentity.outputs.principalId
-          roleDefinitionId: cognitiveServicesOpenAIContributorRole.id
+          principalId: aiServices.outputs.principalId
+          roleDefinitionId: storageBlobDataContributorRole.id
           principalType: 'ServicePrincipal'
         }
       ]
     )
+  }
+}
+
+var contentUnderstandingContainerName = toLower(uniqueString(resourceToken, 'content-understanding'))
+module contentUnderstandingContainer '../../storage/storage-blob-container.bicep' = {
+  name: contentUnderstandingContainerName
+  scope: resourceGroup
+  params: {
+    name: contentUnderstandingContainerName
+    storageAccountName: storageAccount.outputs.name
   }
 }
 
@@ -359,18 +316,11 @@ module aiHub '../../ai_ml/ai-hub.bicep' = {
     descriptionInfo: 'Generated by the AI Content Understanding Quickstart'
     location: location
     tags: union(tags, {})
-    identityId: managedIdentity.outputs.id
     storageAccountId: storageAccount.outputs.id
     keyVaultId: keyVault.outputs.id
     applicationInsightsId: applicationInsights.outputs.id
     aiServicesName: aiServices.outputs.name
-    roleAssignments: concat(azureMLDataScientistRoleAssignments, [
-      {
-        principalId: managedIdentity.outputs.principalId
-        roleDefinitionId: azureMLDataScientistRole.id
-        principalType: 'ServicePrincipal'
-      }
-    ])
+    roleAssignments: concat(azureMLDataScientistRoleAssignments, [])
   }
 }
 
@@ -383,15 +333,8 @@ module aiHubProject '../../ai_ml/ai-hub-project.bicep' = {
     descriptionInfo: 'Generated by the AI Content Understanding Quickstart'
     location: location
     tags: union(tags, {})
-    identityId: managedIdentity.outputs.id
     aiHubName: aiHub.outputs.name
-    roleAssignments: concat(azureMLDataScientistRoleAssignments, [
-      {
-        principalId: managedIdentity.outputs.principalId
-        roleDefinitionId: azureMLDataScientistRole.id
-        principalType: 'ServicePrincipal'
-      }
-    ])
+    roleAssignments: concat(azureMLDataScientistRoleAssignments, [])
   }
 }
 
@@ -405,13 +348,6 @@ output resourceGroupInfo object = {
   name: resourceGroup.name
   location: resourceGroup.location
   workloadName: workloadName
-}
-
-output managedIdentityInfo object = {
-  id: managedIdentity.outputs.id
-  name: managedIdentity.outputs.name
-  principalId: managedIdentity.outputs.principalId
-  clientId: managedIdentity.outputs.clientId
 }
 
 output storageAccountInfo object = {

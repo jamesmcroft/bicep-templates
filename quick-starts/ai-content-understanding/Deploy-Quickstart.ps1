@@ -170,15 +170,17 @@ function Register-ContentUnderstandingService($subscriptionId, $resourceGroupNam
 
             $url = "https://${aiServicesName}.cognitiveservices.azure.com/contentunderstanding/labelingProjects/${aiHubProjectWorkspaceId}?api-version=2024-12-01-preview"
 
+            Write-Host "AI Content Understanding service registration URL: $url"
+
             $payload = @{
                 kind           = "mmiLabeling"
                 displayName    = $aiHubProjectName
-                description    = ""
-                tags           = @()
                 storageAccount = @{
                     containerUrl = "https://${storageAccountName}.blob.core.windows.net/${contentUnderstandingContainerName}"
                 }
             } | ConvertTo-Json -Depth 10
+
+            Write-Host "AI Content Understanding service registration payload: $payload"
 
             $headers = @{
                 Authorization  = "Bearer $token"
@@ -186,15 +188,15 @@ function Register-ContentUnderstandingService($subscriptionId, $resourceGroupNam
                 Accept         = "application/json"
             }
 
+            $headersJson = $headers | ConvertTo-Json -Depth 10
+
+            Write-Host "AI Content Understanding service registration headers: $headersJson"
+
             $response = Invoke-RestMethod -Uri $url -Method Put -Headers $headers -Body $payload -ErrorAction Stop
 
-            if ($response) {
-                $success = $true
-                Write-Host "Successfully registered the AI Content Understanding service."
-                return
-            }
-
-            Write-Error "Failed to register the AI Content Understanding service."
+            $success = $true
+            Write-Host "Successfully registered the AI Content Understanding service."
+            return
         }
         catch {
             if ($_.Exception.Response) {
@@ -208,6 +210,13 @@ function Register-ContentUnderstandingService($subscriptionId, $resourceGroupNam
                 }
 
                 $statusCode = $errorResponse.StatusCode.value__
+
+                if ($statusCode -eq 409) {
+                    Write-Host "AI Content Understanding service is already registered."
+                    $success = $true
+                    return
+                }
+
                 Write-Error "Failed to register the AI Content Understanding service. Status code: $statusCode. Response: $errorContent"
             }
             else {
@@ -350,14 +359,6 @@ $StorageAccountName = $DeploymentOutputs.storageAccountInfo.value.name
 $ContentUnderstandingContainerName = $DeploymentOutputs.storageAccountInfo.value.contentUnderstandingContainerName
 $AIServicesConnectionName = $DeploymentOutputs.aiHubInfo.value.aiServicesConnectionName
 
-Register-ContentUnderstandingService `
-    -subscriptionId $SubscriptionId `
-    -resourceGroupName $ResourceGroupName `
-    -aiServicesName $AIServicesName `
-    -aiHubProjectName $AIContentUnderstandingProjectName `
-    -storageAccountName $StorageAccountName `
-    -contentUnderstandingContainerName $ContentUnderstandingContainerName
-
 Initialize-ContentUnderstandingProject `
     -subscriptionId $SubscriptionId `
     -resourceGroupName $ResourceGroupName `
@@ -365,5 +366,13 @@ Initialize-ContentUnderstandingProject `
     -aiHubProjectName $AIContentUnderstandingProjectName `
     -aiServicesConnectionName $AIServicesConnectionName `
     -force:$Force
+
+Register-ContentUnderstandingService `
+    -subscriptionId $SubscriptionId `
+    -resourceGroupName $ResourceGroupName `
+    -aiServicesName $AIServicesName `
+    -aiHubProjectName $AIContentUnderstandingProjectName `
+    -storageAccountName $StorageAccountName `
+    -contentUnderstandingContainerName $ContentUnderstandingContainerName
 
 Write-Host "Deployment of Azure AI Content Understanding quickstart completed."
