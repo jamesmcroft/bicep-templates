@@ -9,7 +9,12 @@ targetScope = 'subscription'
 param workloadName string
 
 @minLength(1)
-@description('Primary location for all resources.')
+@description('Primary location for all resources. AI Content Understanding is currently only available in the following regions: westus, swedencentral, australiaeast.')
+@allowed([
+  'westus'
+  'swedencentral'
+  'australiaeast'
+])
 param location string
 
 @description('Name of the resource group. If empty, a unique name will be generated.')
@@ -353,7 +358,7 @@ output resourceGroupInfo object = {
 output storageAccountInfo object = {
   id: storageAccount.outputs.id
   name: storageAccount.outputs.name
-  contentUnderstandingContainerName: contentUnderstandingContainer.outputs.name
+  contentUnderstandingContainerName: contentUnderstandingContainerName
 }
 
 output keyVaultInfo object = {

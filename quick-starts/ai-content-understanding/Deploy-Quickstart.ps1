@@ -8,6 +8,14 @@ param(
 )
 
 function Deploy-AzureInfrastructure($deploymentName, $location, $whatIf) {
+    $principalId = (az ad signed-in-user show --query id -o tsv)
+    $identity = @{ 
+        "principalId"   = "$principalId"
+        "principalType" = "User" 
+    } 
+    $identityArray = ConvertTo-Json @($identity) -Depth 5 -Compress
+    $identityArray = $identityArray -replace '"', '\"'
+     
     if ($whatIf) {
         Write-Host "Previewing Azure infrastructure deployment. No changes will be made."
     
@@ -18,6 +26,7 @@ function Deploy-AzureInfrastructure($deploymentName, $location, $whatIf) {
                 --parameters './ai-content-understanding.bicepparam' `
                 --parameters workloadName=$deploymentName `
                 --parameters location=$location `
+                --parameters identities=$identityArray `
                 --no-pretty-print) | ConvertFrom-Json
     
         if (-not $result) {
@@ -37,6 +46,7 @@ function Deploy-AzureInfrastructure($deploymentName, $location, $whatIf) {
             --parameters './ai-content-understanding.bicepparam' `
             --parameters workloadName=$deploymentName `
             --parameters location=$location `
+            --parameters identities=$identityArray `
             --query properties.outputs -o json) | ConvertFrom-Json
     
     if (-not $deploymentOutputs) {
@@ -78,16 +88,8 @@ function Get-AIHubWorkspaceId($subscriptionId, $resourceGroupName, $workspaceNam
     catch {
         if ($_.Exception.Response) {
             $errorResponse = $_.Exception.Response
-
-            try {
-                $errorContent = $errorResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult()
-            }
-            catch {
-                $errorContent = "Unable to read error content."
-            }
-
             $statusCode = $errorResponse.StatusCode.value__
-            Write-Error "Failed to retrieve the AI Hub workspace ID. Status code: $statusCode. Response: $errorContent"
+            Write-Error "Failed to retrieve the AI Hub workspace ID. Status code: $statusCode"
         }
         else {
             Write-Error "An unexpected error occurred: $_"
@@ -112,7 +114,7 @@ function Get-AIHubProjectDetails($subscriptionId, $resourceGroupName, $location,
             reportsV2FilterParams = @{
                 scope = "projectTools"
             }
-        } | ConvertTo-Json -Depth 10
+        } | ConvertTo-Json -Depth 5
 
         $headers = @{
             Authorization  = "Bearer $token"
@@ -131,16 +133,8 @@ function Get-AIHubProjectDetails($subscriptionId, $resourceGroupName, $location,
     catch {
         if ($_.Exception.Response) {
             $errorResponse = $_.Exception.Response
-
-            try {
-                $errorContent = $errorResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult()
-            }
-            catch {
-                $errorContent = "Unable to read error content."
-            }
-
             $statusCode = $errorResponse.StatusCode.value__
-            Write-Error "Failed to retrieve the AI Hub project details. Status code: $statusCode. Response: $errorContent"
+            Write-Error "Failed to retrieve the AI Hub project details. Status code: $statusCode"
         }
         else {
             Write-Error "An unexpected error occurred: $_"
@@ -150,7 +144,7 @@ function Get-AIHubProjectDetails($subscriptionId, $resourceGroupName, $location,
 }
 
 function Register-ContentUnderstandingService($subscriptionId, $resourceGroupName, $aiServicesName, $aiHubProjectName, $storageAccountName, $contentUnderstandingContainerName) {
-    $maxRetries = 3
+    $maxRetries = 5
     $retryCount = 0
     $success = $false
 
@@ -158,6 +152,42 @@ function Register-ContentUnderstandingService($subscriptionId, $resourceGroupNam
         -subscriptionId $subscriptionId `
         -resourceGroupName $resourceGroupName `
         -workspaceName $aiHubProjectName
+
+    $url = "https://${aiServicesName}.cognitiveservices.azure.com/contentunderstanding/labelingProjects/${aiHubProjectWorkspaceId}?api-version=2024-12-01-preview"
+
+    try {
+        Write-Host "Checking if the AI Content Understanding service is already registered..."
+
+        $token = az account get-access-token --resource https://cognitiveservices.azure.com --query accessToken --output tsv
+        if (-not $token) {
+            Throw "Unable to retrieve the access token."
+        }
+
+        $headers = @{
+            Authorization  = "Bearer $token"
+            "Content-Type" = "application/json"
+            Accept         = "application/json"
+        }
+
+        $response = Invoke-RestMethod -Uri $url -Method Get -Headers $headers -ErrorAction Stop
+        Write-Host "AI Content Understanding service is already registered."
+        return
+    }
+    catch {
+        if ($_.Exception.Response) {
+            $errorResponse = $_.Exception.Response
+            $statusCode = $errorResponse.StatusCode.value__
+
+            if ($statusCode -ne 404) {
+                Write-Error "Failed to check the AI Content Understanding service. Status code: $statusCode"
+                exit 1
+            }
+        }
+        else {
+            Write-Error "An unexpected error occurred: $_"
+            exit 1
+        }
+    }
 
     while (-not $success -and $retryCount -lt $maxRetries) {
         try {
@@ -168,29 +198,21 @@ function Register-ContentUnderstandingService($subscriptionId, $resourceGroupNam
                 Throw "Unable to retrieve the access token."
             }
 
-            $url = "https://${aiServicesName}.cognitiveservices.azure.com/contentunderstanding/labelingProjects/${aiHubProjectWorkspaceId}?api-version=2024-12-01-preview"
-
-            Write-Host "AI Content Understanding service registration URL: $url"
-
             $payload = @{
                 kind           = "mmiLabeling"
                 displayName    = $aiHubProjectName
+                description    = ""
+                tags           = @{}
                 storageAccount = @{
                     containerUrl = "https://${storageAccountName}.blob.core.windows.net/${contentUnderstandingContainerName}"
                 }
-            } | ConvertTo-Json -Depth 10
-
-            Write-Host "AI Content Understanding service registration payload: $payload"
+            } | ConvertTo-Json -Depth 5
 
             $headers = @{
                 Authorization  = "Bearer $token"
                 "Content-Type" = "application/json"
                 Accept         = "application/json"
             }
-
-            $headersJson = $headers | ConvertTo-Json -Depth 10
-
-            Write-Host "AI Content Understanding service registration headers: $headersJson"
 
             $response = Invoke-RestMethod -Uri $url -Method Put -Headers $headers -Body $payload -ErrorAction Stop
 
@@ -201,14 +223,6 @@ function Register-ContentUnderstandingService($subscriptionId, $resourceGroupNam
         catch {
             if ($_.Exception.Response) {
                 $errorResponse = $_.Exception.Response
-
-                try {
-                    $errorContent = $errorResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult()
-                }
-                catch {
-                    $errorContent = "Unable to read error content."
-                }
-
                 $statusCode = $errorResponse.StatusCode.value__
 
                 if ($statusCode -eq 409) {
@@ -217,7 +231,7 @@ function Register-ContentUnderstandingService($subscriptionId, $resourceGroupNam
                     return
                 }
 
-                Write-Error "Failed to register the AI Content Understanding service. Status code: $statusCode. Response: $errorContent"
+                Write-Error "Failed to register the AI Content Understanding service. Status code: $statusCode"
             }
             else {
                 Write-Error "An unexpected error occurred: $_"
@@ -226,8 +240,9 @@ function Register-ContentUnderstandingService($subscriptionId, $resourceGroupNam
         
         $retryCount++
         if (-not $success -and $retryCount -lt $maxRetries) {
-            Write-Host "Retrying in 10 seconds..."
-            Start-Sleep -Seconds 10
+            $waitTime = 10 * $retryCount
+            Write-Host "Retrying in $waitTime seconds..."
+            Start-Sleep -Seconds $waitTime
         }
     }
 
@@ -302,9 +317,7 @@ function Initialize-ContentUnderstandingProject($subscriptionId, $resourceGroupN
                     }
                 }
             }
-        }
-
-        $payload = $payload | ConvertTo-Json -Depth 10
+        } | ConvertTo-Json -Depth 5
 
         $headers = @{
             Authorization  = "Bearer $token"
@@ -324,16 +337,8 @@ function Initialize-ContentUnderstandingProject($subscriptionId, $resourceGroupN
     catch {
         if ($_.Exception.Response) {
             $errorResponse = $_.Exception.Response
-
-            try {
-                $errorContent = $errorResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult()
-            }
-            catch {
-                $errorContent = "Unable to read error content."
-            }
-
             $statusCode = $errorResponse.StatusCode.value__
-            Write-Error "Failed to initialize the AI Content Understanding project. Status code: $statusCode. Response: $errorContent"
+            Write-Error "Failed to initialize the AI Content Understanding project. Status code: $statusCode"
         }
         else {
             Write-Error "An unexpected error occurred: $_"
