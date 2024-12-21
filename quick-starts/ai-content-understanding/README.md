@@ -1,6 +1,6 @@
 # Azure AI Content Understanding Project
 
-This [Azure AI Content Understanding Project](./ai-content-understanding.bicep) template demonstrates how to automate the deployment of the new multi-modal AI content understanding service in the Azure AI Foundry. This example provides an AI Foundry environment, secured with Microsoft Entra ID authentication via Azure Managed Identity.
+This [Azure AI Content Understanding Project](./ai-content-understanding.bicep) template demonstrates how to automate the deployment of the new multi-modal AI content understanding service in the Azure AI Foundry using Bicep (and PowerShell). This example provides an AI Foundry environment, secured with Microsoft Entra ID authentication via Azure Managed Identity.
 
 This deployment automates the process driven by the [Azure AI Foundry portal experience](https://ai.azure.com/explore/aiservices/vision/contentunderstanding).
 
