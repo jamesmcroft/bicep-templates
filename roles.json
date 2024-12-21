@@ -162,8 +162,11 @@
     "streamAnalyticsQueryTester": "1ec5b3c1-b17e-4e25-8312-2acb3c3c5abf"
   },
   "ai": {
+    "azureAIAdministrator": "b78c5d69-af96-48a3-bf8d-a8b4d589de94",
     "azureAIDeveloper": "64702f94-c441-49e6-a78b-ef80e0188fee",
+    "azureAIEnterpriseNetworkConnectionApprover": "b556d68e-0be0-4f35-a333-ad7ee1ce17ea",
     "azureAIInferenceDeploymentOperator": "3afb7f49-54cb-416e-8c09-6dc049efa503",
+    "azureAISafetyEvaluator": "11102f94-c441-49e6-a78b-ef80e0188abc",
     "azureMLComputeOperator": "e503ece1-11d0-4e8e-8e2c-7a6c3bf38815",
     "azureMLDataScientist": "f6c7c914-8db3-469d-8ca1-694a8f32e121",
     "cognitiveServicesContributor": "25fbc0a9-bd7c-42a3-aa1a-3b75d497ee68",
