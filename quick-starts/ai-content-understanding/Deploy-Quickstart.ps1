@@ -381,3 +381,6 @@ Register-ContentUnderstandingService `
     -contentUnderstandingContainerName $ContentUnderstandingContainerName
 
 Write-Host "Deployment of Azure AI Content Understanding quickstart completed."
+
+$portalUrl = "https://ai.azure.com/build/visdoc/contentunderstanding/schema?wsid=/subscriptions/${SubscriptionId}/resourceGroups/${ResourceGroupName}/providers/Microsoft.MachineLearningServices/workspaces/${AIContentUnderstandingProjectName}"
+Write-Host "To start using Azure AI Content Understanding, navigate to the portal: $portalUrl"
