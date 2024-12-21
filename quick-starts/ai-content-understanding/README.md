@@ -11,7 +11,6 @@ This deployment automates the process driven by the [Azure AI Foundry portal exp
 | `Microsoft.Resources/resourceGroups`           | The resource group all resources are deployed into                                                                                                      |
 | `Microsoft.MachineLearningServices/workspaces` | An Azure AI Foundry Hub and associated AI Content Understanding Project instance to act as the workspace for using the AI Content Understanding service |
 | `Microsoft.CognitiveServices/accounts`         | An Azure AI Services instance associated with the AI Content Understanding project for accessing Azure AI capabilities                                  |
-
 | `Microsoft.Storage/storageAccounts` | An Azure Storage account associated with the AI Content Understanding project for data storage |
 | `Microsoft.Storage/storageAccounts/blobServices/containers` | An Azure Blob Storage container associated with the AI Content Understanding project for storing training and labeling data |
 | `Microsoft.KeyVault/vaults` | An Azure Key Vault associated with the AI Content Understanding project for secret storage |
