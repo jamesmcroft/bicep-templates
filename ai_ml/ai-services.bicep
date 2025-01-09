@@ -126,7 +126,7 @@ param logAnalyticsWorkspaceName string?
 param diagnosticSettings diagnosticSettingsInfo = {
   logs: [
     {
-      category: 'allLogs'
+      categoryGroup: 'allLogs'
       enabled: true
     }
   ]

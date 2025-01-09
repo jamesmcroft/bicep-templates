@@ -13,17 +13,35 @@ type skuInfo = {
 }
 
 @export()
-@description('Diagnostic settings configuration info for logs and metrics.')
-type diagnosticSettingsConfigInfo = {
-  @description('Name of the diagnostic log or metric setting.')
-  category: string
+@description('Diagnostic settings configuration info for logs.')
+type diagnosticSettingsLogConfigInfo = {
+  @description('Name of the diagnostic log setting. Required if categoryGroup is not specified.')
+  category: string?
+  @description('Name of the category group of diagnostic logs. Required if category is not specified.')
+  categoryGroup: string?
   @description('Flag indicating whether the diagnostic setting is enabled.')
   enabled: bool
-  @description('Retention policy for the logs or metrics.')
+  @description('Retention policy for the logs.')
   retentionPolicy: {
     @description('Flag indicating whether the retention policy is enabled.')
     enabled: bool
-    @description('Number of days to retain the logs or metrics.')
+    @description('Number of days to retain the logs.')
+    days: int
+  }?
+}
+
+@export()
+@description('Diagnostic settings configuration info for metrics.')
+type diagnosticSettingsMetricConfigInfo = {
+  @description('Name of the diagnostic metric setting.')
+  category: string
+  @description('Flag indicating whether the diagnostic setting is enabled.')
+  enabled: bool
+  @description('Retention policy for the metrics.')
+  retentionPolicy: {
+    @description('Flag indicating whether the retention policy is enabled.')
+    enabled: bool
+    @description('Number of days to retain the metrics.')
     days: int
   }?
 }
@@ -32,9 +50,9 @@ type diagnosticSettingsConfigInfo = {
 @description('Diagnostic settings info for supported resources.')
 type diagnosticSettingsInfo = {
   @description('Diagnostic settings for logs.')
-  logs: diagnosticSettingsConfigInfo[]
+  logs: diagnosticSettingsLogConfigInfo[]
   @description('Diagnostic settings for metrics.')
-  metrics: diagnosticSettingsConfigInfo[]
+  metrics: diagnosticSettingsMetricConfigInfo[]
 }
 
 @description('Log Analytics Workspace SKU. Defaults to PerGB2018.')
@@ -59,8 +77,6 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09
   }
 }
 
-@description('The deployed Log Analytics Workspace resource.')
-output resource resource = logAnalyticsWorkspace
 @description('ID for the deployed Log Analytics Workspace resource.')
 output id string = logAnalyticsWorkspace.id
 @description('Name for the deployed Log Analytics Workspace resource.')
