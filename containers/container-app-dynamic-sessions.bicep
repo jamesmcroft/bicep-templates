@@ -7,8 +7,9 @@ param location string = resourceGroup().location
 @description('Tags for the resource.')
 param tags object = {}
 
-@description('The number of seconds to wait before scaling down the pool after the last session is completed. Defaults to 120 seconds.')
-param cooldownPeriodInSeconds int = 120
+@description('The number of seconds to wait before scaling down the pool after the last session is completed. Must be greater than or equal to 300 seconds. Defaults to 300 seconds.')
+@minValue(300)
+param cooldownPeriodInSeconds int = 300
 @description('The maximum number of concurrent sessions that can be created in the pool. Defaults to 20.')
 param maxConcurrentSessions int = 20
 @description('The number of sessions to keep ready in the pool. Defaults to 1.')
