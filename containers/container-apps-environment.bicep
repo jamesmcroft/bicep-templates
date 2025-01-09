@@ -53,6 +53,8 @@ type vnetConfigInfo = {
 param workloadProfiles workloadProfileInfo[] = []
 @description('Name of the Log Analytics Workspace to store application logs.')
 param logAnalyticsWorkspaceName string
+@description('Name of the Application Insights resource.')
+param applicationInsightsName string
 @description('Custom domain configuration for the environment.')
 param customDomainConfig customDomainConfigInfo = {
   dnsSuffix: ''
@@ -66,11 +68,13 @@ param vnetConfig vnetConfigInfo = {
 }
 @description('Value indicating whether the environment is zone-redundant. Defaults to false.')
 param zoneRedundant bool = false
-@description('Application Insights connection string for Dapr to export service-to-service telemetry.')
-param daprAIConnectionString string?
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
   name: logAnalyticsWorkspaceName
+}
+
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
+  name: applicationInsightsName
 }
 
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' = {
@@ -97,7 +101,7 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2024-03-01'
     customDomainConfiguration: !empty(customDomainConfig.dnsSuffix) ? customDomainConfig : {}
     vnetConfiguration: !empty(vnetConfig.infrastructureSubnetId) ? vnetConfig : {}
     zoneRedundant: zoneRedundant
-    daprAIConnectionString: daprAIConnectionString
+    daprAIConnectionString: applicationInsights.properties.ConnectionString
   }
 }
 
