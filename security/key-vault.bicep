@@ -1,4 +1,5 @@
 import { roleAssignmentInfo } from '../security/managed-identity.bicep'
+import { diagnosticSettingsInfo } from '../management_governance/log-analytics-workspace.bicep'
 
 @description('Name of the resource.')
 param name string
@@ -21,6 +22,23 @@ param retentionInDays int = 90
 param enablePurgeProtection bool = true
 @description('Role assignments to create for the Key Vault.')
 param roleAssignments roleAssignmentInfo[] = []
+@description('Name of the Log Analytics Workspace to use for diagnostic settings.')
+param logAnalyticsWorkspaceName string?
+@description('Diagnostic settings to configure for the Key Vault instance. Defaults to all logs and metrics.')
+param diagnosticSettings diagnosticSettingsInfo = {
+  logs: [
+    {
+      categoryGroup: 'allLogs'
+      enabled: true
+    }
+  ]
+  metrics: [
+    {
+      category: 'AllMetrics'
+      enabled: true
+    }
+  ]
+}
 
 resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' = {
   name: name
@@ -57,6 +75,20 @@ resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
     }
   }
 ]
+
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = if (logAnalyticsWorkspaceName != null) {
+  name: logAnalyticsWorkspaceName!
+}
+
+resource aiServicesDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (logAnalyticsWorkspaceName != null) {
+  name: '${keyVault.name}-diagnostic-settings'
+  scope: keyVault
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: diagnosticSettings!.logs
+    metrics: diagnosticSettings!.metrics
+  }
+}
 
 @description('The deployed Key Vault resource.')
 output resource resource = keyVault
