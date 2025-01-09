@@ -1,6 +1,7 @@
 import { roleAssignmentInfo } from '../security/managed-identity.bicep'
 import { serverlessModelDeploymentInfo, serverlessModelDeploymentOutputInfo } from './ai-hub-model-serverless-endpoint.bicep'
 import { connectionInfo } from 'ai-hub-connection.bicep'
+import { diagnosticSettingsInfo } from '../management_governance/log-analytics-workspace.bicep'
 
 @description('Name of the resource.')
 param name string
@@ -50,6 +51,23 @@ param serverlessModels serverlessModelDeploymentInfo[] = []
 param connections connectionInfo[] = []
 @description('Role assignments to create for the AI Hub instance.')
 param roleAssignments roleAssignmentInfo[] = []
+@description('Name of the Log Analytics Workspace to use for diagnostic settings.')
+param logAnalyticsWorkspaceName string?
+@description('Diagnostic settings to configure for the AI Hub instance. Defaults to all logs and metrics.')
+param diagnosticSettings diagnosticSettingsInfo = {
+  logs: [
+    {
+      categoryGroup: 'allLogs'
+      enabled: true
+    }
+  ]
+  metrics: [
+    {
+      category: 'AllMetrics'
+      enabled: true
+    }
+  ]
+}
 
 resource aiServices 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' existing = {
   name: aiServicesName
@@ -135,6 +153,20 @@ resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
     }
   }
 ]
+
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = if (logAnalyticsWorkspaceName != null) {
+  name: logAnalyticsWorkspaceName!
+}
+
+resource aiHubDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (logAnalyticsWorkspaceName != null) {
+  name: '${aiHub.name}-diagnostic-settings'
+  scope: aiHub
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: diagnosticSettings!.logs
+    metrics: diagnosticSettings!.metrics
+  }
+}
 
 @description('The deployed AI Hub resource.')
 output resource resource = aiHub
