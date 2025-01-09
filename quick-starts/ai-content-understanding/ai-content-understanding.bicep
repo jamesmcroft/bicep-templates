@@ -183,6 +183,7 @@ module aiServices '../../ai_ml/ai-services.bicep' = {
     location: location
     tags: union(tags, {})
     raiPolicies: raiPolicies
+    logAnalyticsWorkspaceName: logAnalyticsWorkspace.outputs.name
     deployments: aiServiceModelDeployments
     roleAssignments: concat(
       cognitiveServicesUserRoleAssignments,

@@ -31,8 +31,6 @@ type diagnosticSettingsConfigInfo = {
 @export()
 @description('Diagnostic settings info for supported resources.')
 type diagnosticSettingsInfo = {
-  @description('ID of the Log Analytics Workspace to send diagnostics to.')
-  workspaceId: string
   @description('Diagnostic settings for logs.')
   logs: diagnosticSettingsConfigInfo[]
   @description('Diagnostic settings for metrics.')

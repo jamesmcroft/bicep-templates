@@ -120,8 +120,23 @@ param disableLocalAuth bool = true
 param raiPolicies raiPolicyInfo[] = []
 @description('Role assignments to create for the AI Services instance.')
 param roleAssignments roleAssignmentInfo[] = []
-@description('Diagnostic settings to configure for the AI Services instance.')
-param diagnosticSettings diagnosticSettingsInfo?
+@description('Name of the Log Analytics Workspace to use for diagnostic settings.')
+param logAnalyticsWorkspaceName string?
+@description('Diagnostic settings to configure for the AI Services instance. Defaults to all logs and metrics.')
+param diagnosticSettings diagnosticSettingsInfo = {
+  logs: [
+    {
+      category: 'allLogs'
+      enabled: true
+    }
+  ]
+  metrics: [
+    {
+      category: 'AllMetrics'
+      enabled: true
+    }
+  ]
+}
 
 resource aiServices 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
   name: name
@@ -277,11 +292,15 @@ resource assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   }
 ]
 
-resource aiServicesDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (diagnosticSettings != null) {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = if (logAnalyticsWorkspaceName != null) {
+  name: logAnalyticsWorkspaceName!
+}
+
+resource aiServicesDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (logAnalyticsWorkspaceName != null) {
   name: '${aiServices.name}-diagnostic-settings'
   scope: aiServices
   properties: {
-    workspaceId: diagnosticSettings!.workspaceId
+    workspaceId: logAnalyticsWorkspace.id
     logs: diagnosticSettings!.logs
     metrics: diagnosticSettings!.metrics
   }

@@ -244,6 +244,7 @@ module aiServices '../../ai_ml/ai-services.bicep' = {
     tags: union(tags, {})
     identityId: managedIdentity.outputs.id
     raiPolicies: raiPolicies
+    logAnalyticsWorkspaceName: logAnalyticsWorkspace.outputs.name
     deployments: aiServiceModelDeployments
     roleAssignments: [
       {
