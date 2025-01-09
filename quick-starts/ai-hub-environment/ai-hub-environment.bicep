@@ -160,6 +160,7 @@ module keyVault '../../security/key-vault.bicep' = {
         principalType: 'ServicePrincipal'
       }
     ]
+    logAnalyticsWorkspaceName: logAnalyticsWorkspace.outputs.name
   }
 }
 

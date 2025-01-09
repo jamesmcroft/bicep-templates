@@ -99,6 +99,7 @@ module keyVault '../../security/key-vault.bicep' = {
     location: location
     tags: union(tags, {})
     roleAssignments: concat(keyVaultContributorIdentityAssignments, [])
+    logAnalyticsWorkspaceName: logAnalyticsWorkspace.outputs.name
   }
 }
 
