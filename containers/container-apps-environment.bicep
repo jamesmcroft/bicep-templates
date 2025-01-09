@@ -66,6 +66,8 @@ param vnetConfig vnetConfigInfo = {
 }
 @description('Value indicating whether the environment is zone-redundant. Defaults to false.')
 param zoneRedundant bool = false
+@description('Application Insights connection string for Dapr to export service-to-service telemetry.')
+param daprAIConnectionString string?
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
   name: logAnalyticsWorkspaceName
@@ -95,6 +97,7 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2024-03-01'
     customDomainConfiguration: !empty(customDomainConfig.dnsSuffix) ? customDomainConfig : {}
     vnetConfiguration: !empty(vnetConfig.infrastructureSubnetId) ? vnetConfig : {}
     zoneRedundant: zoneRedundant
+    daprAIConnectionString: daprAIConnectionString
   }
 }
 
