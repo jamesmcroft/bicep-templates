@@ -1,5 +1,8 @@
 # Azure Bicep Templates
 
+> [!IMPORTANT]
+> This repository has been archived. I highly recommend leveraging [Azure Verified Modules (AVM)](https://azure.github.io/Azure-Verified-Modules/) for standardized Bicep resource and pattern templates.
+
 These templates are designed to help you [deploy Azure resources using Bicep](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview?tabs=bicep). They are easy to use and can be combined to build up a larger deployment of the resources required for your Azure solutions.
 
 If you're looking for inspiration for your solution, check out the [available quick start templates](./quick-starts/README.md).
